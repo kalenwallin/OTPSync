@@ -39,23 +39,6 @@
 
 To keep things organized, this repository contains both client applications.
 
-###  macOS Setup
-
-
-### 🤖 Android Setup
-
-
-
-## 🛡 Security & Secrets
-
-**Use your own keys!**
-This project uses Firebase. For security reasons, our config files (`google-services.json` and `GoogleService-Info.plist`) are **NOT** included in the repository.
-
-*   **Contributors**: You must create your own free Firebase project to build and test the app.
-*   **Encryption**: If you are deploying this for personal use, verify that you are using a secure, unique encryption key so only your devices can read the clipboard data.
-
----
-
 ## 🤝 Contributing
 
 We love contributions!
