@@ -1,6 +1,6 @@
-# 📋 ClipSync: Seamless Universal Clipboard
+[![Clipsync logo](mac/ClipSync/Assets.xcassets/AppIcon.appiconset/Readme-logo.png)]
 
-![Banner](https://via.placeholder.com/1200x400?text=ClipSync+Banner) <!-- Replace with your real banner -->
+#  ClipSync: Seamless Universal Clipboard
 
 **ClipSync** is the ultimate tool to synchronize your clipboard across all your devices—**instantly** and **securely**. Copy on your Mac, paste on your Android. It's that simple. 🚀
 
