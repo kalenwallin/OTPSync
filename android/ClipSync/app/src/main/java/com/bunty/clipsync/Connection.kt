@@ -1,0 +1,229 @@
+package com.bunty.clipsync
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Spring
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.graphicsLayer
+import com.airbnb.lottie.compose.*
+
+@Composable
+fun ConnectionPage(
+    onContinue: () -> Unit = {},
+    onUnpair: () -> Unit = {}
+) {
+    val context = LocalContext.current
+
+    // Get the paired device name dynamically
+    val pairedDeviceName = DeviceManager.getPairedMacDeviceName(context)
+
+    // Listens for clipboard items removed to avoid confusion.
+    // The background Service handles all clipboard sync.
+
+    val backgroundColor = Color(0xFFB1C2F6)
+    val robotoFontFamily = FontFamily(
+        Font(R.font.roboto_regular, FontWeight.Normal),
+        Font(R.font.roboto_medium, FontWeight.Medium),
+        Font(R.font.roboto_bold, FontWeight.Bold),
+        Font(R.font.roboto_black, FontWeight.Black)
+    )
+
+    // Typewriter Effect
+    val fullText = "You're Connected"
+    var displayedText by remember { mutableStateOf("") }
+
+    // Exit Animation
+    var isExiting by remember { mutableStateOf(false) }
+    val buttonScale = remember { Animatable(1f) }
+    val scope = rememberCoroutineScope()
+
+    var showSubtitle by remember { mutableStateOf(false) }
+    var isPlayingLottie by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        delay(100)
+        fullText.forEachIndexed { index, _ ->
+            displayedText = fullText.substring(0, index + 1)
+            delay(15) // Even faster typing
+        }
+        delay(100)
+        showSubtitle = true // Trigger subtitle appearance
+        delay(100) // Short pause before animation
+        isPlayingLottie = true // Start Lottie animation
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        AnimatedVisibility(
+            visible = !isExiting,
+            exit = fadeOut(animationSpec = tween(300)) +
+                    scaleOut(targetScale = 0.9f, animationSpec = tween(300))
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                // Rectangular Card
+                Box(
+                    modifier = Modifier
+                        .width(370.dp)
+                        .height(440.dp)
+                        .align(Alignment.Center)
+                        .offset(y = (-20).dp)
+                        .background(
+                            color = Color.White.copy(alpha = 0.2f),
+                            shape = RoundedCornerShape(32.dp)
+                        )
+                ) {
+                    // 1. Title Text (Top)
+                    Text(
+                        text = displayedText,
+                        fontFamily = robotoFontFamily,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 32.sp,
+                        letterSpacing = (-0.03).em,
+                        color = Color.White,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .offset(y = 60.dp)
+                    )
+
+                    // 2. Subtitle Text (Below Title)
+                    androidx.compose.animation.AnimatedVisibility(
+                        visible = showSubtitle,
+                        enter = androidx.compose.animation.fadeIn(tween(500)) +
+                                androidx.compose.animation.scaleIn(initialScale = 0.9f, animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy)),
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .offset(y = 110.dp)
+                    ) {
+                        // ✅ FIX: Shows dynamic device name instead of "Bunty's Mac"
+                        Text(
+                            text = "You are now paired with $pairedDeviceName",
+                            fontFamily = robotoFontFamily,
+                            fontWeight = FontWeight.SemiBold, // Heavy weight
+                            fontSize = 22.sp,
+                            letterSpacing = (-0.03).em,
+                            lineHeight = 26.sp,
+                            textAlign = TextAlign.Center,
+                            style = TextStyle(
+                                brush = Brush.linearGradient(
+                                    colors = listOf(
+                                        Color(0xFF3F96E2),
+                                        Color(0xFF6C45BA)
+                                    )
+                                )
+                            ),
+                            modifier = Modifier.width(331.dp)
+                        )
+                    }
+
+                    // 3. Lottie Animation (Center/Bottom) - Appears last
+                    androidx.compose.animation.AnimatedVisibility(
+                        visible = isPlayingLottie,
+                        enter = androidx.compose.animation.fadeIn(tween(500)),
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .offset(y = 80.dp)
+                    ) {
+                        val composition by rememberLottieComposition(LottieCompositionSpec.Asset("Sync Data.lottie"))
+                        val progress by animateLottieCompositionAsState(
+                            composition = composition,
+                            iterations = LottieConstants.IterateForever,
+                            isPlaying = true // Always play once visible
+                        )
+
+                        LottieAnimation(
+                            composition = composition,
+                            progress = { progress },
+                            modifier = Modifier.size(250.dp)
+                        )
+                    }
+                }
+
+                // Next Button - Circular at Bottom
+                Button(
+                    onClick = {
+                        scope.launch {
+                            // Bounce & Exit
+                            buttonScale.animateTo(0.8f, animationSpec = tween(100))
+                            buttonScale.animateTo(
+                                1f,
+                                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)
+                            )
+                            delay(100)
+                            isExiting = true
+                            delay(300)
+                            onContinue()
+                        }
+                    },
+                    modifier = Modifier
+                        .size(70.dp) // Circular size
+                        .align(Alignment.BottomCenter)
+                        .offset(y = (-40).dp)
+                        .graphicsLayer {
+                            scaleX = buttonScale.value
+                            scaleY = buttonScale.value
+                        }
+                        .border(
+                            width = 1.dp,
+                            color = Color.White,
+                            shape = CircleShape // Circular border
+                        ),
+                    shape = CircleShape, // Circular shape
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White.copy(alpha = 0.2f)
+                    ),
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.resume),
+                        contentDescription = "Resume/Continue",
+                        modifier = Modifier.size(30.dp),
+                        tint = Color.Black
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true, widthDp = 360, heightDp = 800)
+@Composable
+fun ConnectionPagePreview() {
+    ConnectionPage()
+}
