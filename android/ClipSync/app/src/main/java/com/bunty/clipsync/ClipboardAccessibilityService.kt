@@ -174,8 +174,12 @@ class ClipboardAccessibilityService : AccessibilityService() {
                     // IMPORTANT: We pass 'isClick' to dfsFindCopy to apply the same strict rules depths-wise.
                     var source = event.source
                     if (triggerType == null && source != null) {
-                        if (dfsFindCopy(source, isClick = isClick)) {
-                            triggerType = "Deep Search (Source)"
+                        try {
+                            if (dfsFindCopy(source, isClick = isClick)) {
+                                triggerType = "Deep Search (Source)"
+                            }
+                        } finally {
+                            source.recycle()
                         }
                     }
 
@@ -193,10 +197,14 @@ class ClipboardAccessibilityService : AccessibilityService() {
                          if (isWindowStateChange || timeSinceLastRootScan > 2000) {
                             val rootNode = rootInActiveWindow
                             if (rootNode != null) {
-                                lastRootScanTime = now
-                                // For root scan (always passive), we treat isClick = false
-                                if (dfsFindCopy(rootNode, isClick = false)) {
-                                    triggerType = "Root Window Scan"
+                                try {
+                                    lastRootScanTime = now
+                                    // For root scan (always passive), we treat isClick = false
+                                    if (dfsFindCopy(rootNode, isClick = false)) {
+                                        triggerType = "Root Window Scan"
+                                    }
+                                } finally {
+                                    rootNode.recycle()
                                 }
                             }
                          }
@@ -270,8 +278,14 @@ class ClipboardAccessibilityService : AccessibilityService() {
 
         for (i in 0 until node.childCount) {
             val child = node.getChild(i)
-            if (dfsFindCopy(child, depth + 1, isClick)) {
-                return true
+            if (child != null) {
+                try {
+                    if (dfsFindCopy(child, depth + 1, isClick)) {
+                        return true
+                    }
+                } finally {
+                    child.recycle()
+                }
             }
         }
         return false
