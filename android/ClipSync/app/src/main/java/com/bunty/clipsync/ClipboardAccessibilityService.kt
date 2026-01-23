@@ -23,7 +23,9 @@ class ClipboardAccessibilityService : AccessibilityService() {
     private var lastUploadedContent: String = ""
     private var lastClipboardContent: String = ""
     private var lastEventTime = 0L
+
     private var lastRootScanTime = 0L
+    private var firestoreListener: com.google.firebase.firestore.ListenerRegistration? = null
 
     // Direct clipboard listener commented out in favor of accessibility events
     // for broader compatibility on Android 10+
@@ -306,9 +308,11 @@ class ClipboardAccessibilityService : AccessibilityService() {
 
     private fun startFirestoreListener() {
         try {
-            FirestoreManager.listenToClipboard(this) { content: String ->
+            // Remove existing listener to prevent duplicates
+            firestoreListener?.remove()
+            
+            firestoreListener = FirestoreManager.listenToClipboard(this) { content: String ->
                 try {
-                    if (content == lastSyncedContent || content == lastClipboardContent) {
                     if (content == lastSyncedContent || content == lastClipboardContent) {
                         return@listenToClipboard
                     }
@@ -352,6 +356,13 @@ class ClipboardAccessibilityService : AccessibilityService() {
             Log.e(TAG, "Error removing clipboard listener", e)
         }
 
+        // Stop Firestore listener
+        firestoreListener?.remove()
+        firestoreListener = null
+        
+        // Remove pending handler callbacks to prevent leaks
+        handler.removeCallbacksAndMessages(null)
+        
         isRunning = false
         Log.d(TAG, "Service destroyed")
     }

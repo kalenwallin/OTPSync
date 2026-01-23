@@ -1,6 +1,9 @@
 package com.bunty.clipsync
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.os.PowerManager
 import android.provider.Settings
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
@@ -91,6 +94,7 @@ fun Homescreen(
     // Permission Checks
     var isAccessibilityEnabled by remember { mutableStateOf(false) }
     var isNotificationEnabled by remember { mutableStateOf(false) }
+    var isBatteryUnrestricted by remember { mutableStateOf(false) }
 
     // Feature Toggles (Preferences)
     var syncToMac by remember { mutableStateOf(DeviceManager.isSyncToMacEnabled(context)) }
@@ -102,6 +106,9 @@ fun Homescreen(
     fun checkPermissions() {
         isAccessibilityEnabled = checkServiceStatus(context, ClipboardAccessibilityService::class.java)
         isNotificationEnabled = Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners")?.contains(context.packageName) == true
+        
+        val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+        isBatteryUnrestricted = pm.isIgnoringBatteryOptimizations(context.packageName)
     }
 
     // Auto-refresh on Resume
@@ -317,10 +324,34 @@ fun Homescreen(
                                     fontFamily = robotoFontFamily,
                                     scale = scale
                                 )
+
+                                HorizontalDivider(modifier = Modifier.padding(vertical = (16 * scale).dp), color = Color(0xFFE5E5EA))
+
+                                // Battery Optimization Status
+                                StatusRow(
+                                    label = "Background Sync",
+                                    isActive = isBatteryUnrestricted,
+                                    isWarning = true,
+                                    fontFamily = robotoFontFamily,
+                                    scale = scale,
+                                    onClick = {
+                                        if (!isBatteryUnrestricted) {
+                                            try {
+                                                val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                                                    data = Uri.parse("package:${context.packageName}")
+                                                }
+                                                context.startActivity(intent)
+                                            } catch (e: Exception) {
+                                                Toast.makeText(context, "Could not open Battery Settings", Toast.LENGTH_SHORT).show()
+                                            }
+                                        }
+                                    }
+                                )
                             }
                         }
                         
-                        if (!isAccessibilityEnabled || !isNotificationEnabled) {
+                        // Show warning if ANY critical permission is missing
+                        if (!isAccessibilityEnabled || !isNotificationEnabled || !isBatteryUnrestricted) {
                             Spacer(modifier = Modifier.height((12 * scale).dp))
                             Row(verticalAlignment = Alignment.Top) {
                                 Icon(
