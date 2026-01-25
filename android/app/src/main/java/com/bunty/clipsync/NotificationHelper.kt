@@ -25,6 +25,7 @@ class NotificationHelper(private val context: Context) {
         createNotificationChannels()
     }
 
+    // --- Channel Creation (Android O+) ---
     private fun createNotificationChannels() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val clipboardChannel = NotificationChannel(
@@ -48,6 +49,7 @@ class NotificationHelper(private val context: Context) {
         }
     }
 
+    // --- Notification Builder ---
     fun showClipboardNotification(content: String, isOtp: Boolean = false) {
         if (ActivityCompat.checkSelfPermission(
                 context,

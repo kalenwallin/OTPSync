@@ -13,7 +13,7 @@ class FirebaseManager {
     let db: Firestore
     
     private init() {
-        // Configure Firebase (only once)
+        // --- Configuration (Region Aware) ---
         if FirebaseApp.app() == nil {
             let region = UserDefaults.standard.string(forKey: "server_region") ?? "IN"
             print("🌍 Initializing Firebase for Region: \(region)")
@@ -49,7 +49,8 @@ class FirebaseManager {
         print("⚠️ Make sure Firestore rules allow unauthenticated access!")
     }
     
-    // Test if app has network access
+    // --- Connectivity Test ---
+    // Test if app has network access (Sandbox check)
     private func testNetworkConnection() {
         guard let url = URL(string: "https://www.google.com") else { return }
         
@@ -64,6 +65,7 @@ class FirebaseManager {
         task.resume()
     }
     
+    // --- Testing Helpers ---
     // TESTING MODE: Skip auth completely
     func waitForAuth(timeout: TimeInterval = 15.0, completion: @escaping (Bool) -> Void) {
         print("⚠️ TESTING MODE: Skipping authentication")

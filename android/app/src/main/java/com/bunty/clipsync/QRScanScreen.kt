@@ -38,7 +38,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.min
 
-// Custom shadow modifier function
+// --- Custom Shadow Utility ---
+// Draws a high-performance blurred drop shadow using Android framework Paint
 fun Modifier.customDropShadow(
     offsetX: Dp = 0.dp,
     offsetY: Dp = 4.dp,
@@ -96,12 +97,12 @@ fun QRScanScreen(
         Font(R.font.roboto_black, FontWeight.Black)
     )
 
-    // State to control camera activation
+    // --- State & Animations ---
     var isCameraActive by remember { mutableStateOf(initialCameraActive) }
     var isLoading by remember { mutableStateOf(false) }
     var scannedData by remember { mutableStateOf("") }
 
-    // Load animation upfront
+    // Preload Lottie Animation
     val composition by rememberLottieComposition(LottieCompositionSpec.Asset("Loading.lottie"))
     val lottieAnimatable = rememberLottieAnimatable()
 
@@ -183,6 +184,7 @@ fun QRScanScreen(
                             )
                         )
                 ) {
+                    // --- Camera View Container ---
                     androidx.compose.animation.AnimatedVisibility(
                         visible = showContent,
                         enter = androidx.compose.animation.fadeIn(tween(800))

@@ -31,6 +31,7 @@ struct HomeScreen: View {
                 .ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: 0) {
+                // --- Core Layout ---
                 // Title
                 Text("Settings")
                     .font(.system(size: 40, weight: .bold, design: .default))
@@ -47,7 +48,7 @@ struct HomeScreen: View {
                         HStack(alignment: .top, spacing: 18) {
                             // Left Column: Device Card + (Sync Settings | RePair)
                             VStack(alignment: .leading, spacing: 12) {
-                                // MARK: Device Name Card (Separate)
+                                // --- Device Card ---
                                 InnerGlassCard {
                                     HStack(spacing: 12) {
                                         Image("mobile")
@@ -76,15 +77,15 @@ struct HomeScreen: View {
                                 .offset(x: 7)
                                 
                                 
-                                // MARK: Sync Settings + RePair Row
+                                // --- Sync Settings Row ---
                                 HStack(alignment: .top, spacing: 28) {
-                                    // Sync Settings Card - Refined
+                                    // Sync Toggles
                                     InnerGlassCard {
                                         VStack(alignment: .leading, spacing: 0) {
                                             Text("Sync Settings")
                                                 .font(.system(size: 11, weight: .semibold))
                                                 .foregroundColor(.black.opacity(0.6))
-                                                .padding(.top, 14)
+                                                .padding(.top, 14) // Adjusted Padding
                                                 .padding(.leading, 12)
                                                 .padding(.bottom, 12)
                                             
@@ -204,7 +205,7 @@ struct HomeScreen: View {
                                 .padding(.leading, 15)
                             }
                             
-                            // MARK: Check Encryption Card (Right Side)
+                            // --- Encryption Test Card ---
                             CheckEncryptionCard(
                                 encryptionTestResult: encryptionTestResult,
                                 isTestingEncryption: isTestingEncryption,
@@ -215,17 +216,16 @@ struct HomeScreen: View {
                         }
                         .padding(.horizontal, 30)
                         
-                        // MARK: Bottom Large Card (Clipboard History)
+                        // --- Clipboard History (Bottom) ---
                         InnerGlassCard {
                             VStack(alignment: .leading, spacing: 0) {
-                                // Title inside the card
                                 Text("Clipboard History")
                                     .font(.system(size: 12, weight: .semibold))
                                     .foregroundColor(.black.opacity(0.5))
                                     .padding(.top, 14)
                                     .padding(.leading, 16)
                                     .padding(.bottom, 8)
-                                
+                                    
                                 Divider()
                                     .background(Color.black.opacity(0.1))
                                     .padding(.horizontal, 16)

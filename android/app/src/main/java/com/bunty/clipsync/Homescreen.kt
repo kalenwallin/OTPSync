@@ -67,14 +67,12 @@ fun Homescreen(
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp
-// Responsive scaling
+    // --- Responsive Scaling Constants ---
+    // Reference Design: 412x915 dp
     val screenWidth = configuration.screenWidthDp.dp
-    // Reference 412x915
     val widthScale = screenWidth.value / 412f
     val heightScale = screenHeight / 915f
     val scale = min(widthScale, heightScale)
-
-    // Responsive title size - scales from 42sp to 58sp based on screen height
     val titleFontSize = (58 * scale).coerceIn(42f, 58f).sp
     
     val scope = rememberCoroutineScope()
@@ -90,23 +88,19 @@ fun Homescreen(
         )
     }
 
-    // States
+    // --- State Initialization ---
+    
+    // UI Visibility State
     var showContent by remember { mutableStateOf(false) }
     
-    // Permission Checks
+    // Permission States
     var isAccessibilityEnabled by remember { mutableStateOf(false) }
     var isBatteryUnrestricted by remember { mutableStateOf(false) }
 
-    // Update Checker State
+    // Update Checker State (Version Management)
     var updateInfo by remember { mutableStateOf<UpdateChecker.UpdateInfo?>(null) }
     var showUpdateDialog by remember { mutableStateOf(false) }
-    val currentVersion = "1.0" // TODO: Get this dynamically from BuildConfig in real app
-
-    // Update Checker State
-    var updateInfo by remember { mutableStateOf<UpdateChecker.UpdateInfo?>(null) }
-    var showUpdateDialog by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
-    val currentVersion = "1.0.0" // TODO: Get this dynamically from BuildConfig in real app
+    val currentVersion = "1.0.0" // TODO: Fetch from BuildConfig in production
 
     // Feature Toggles (Preferences)
     var syncToMac by remember { mutableStateOf(DeviceManager.isSyncToMacEnabled(context)) }
@@ -181,7 +175,10 @@ fun Homescreen(
         )
     }
 
-    // Keep the SERVICE listener for real-time clipboard SYNC
+    // --- Side Effects ---
+
+    // 1. Service Listener for Real-Time Sync
+    // Listens to Firestore changes and notifies user/updates state if needed
     DisposableEffect(Unit) {
         val registration = FirestoreManager.listenToClipboard(context) { text ->
              // Only process if Sync FROM Mac is enabled

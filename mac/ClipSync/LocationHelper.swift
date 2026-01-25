@@ -8,6 +8,7 @@ import Foundation
 class LocationHelper {
     static let shared = LocationHelper()
     
+    // --- IP Location Detection ---
     func detectRegion(completion: @escaping (String?) -> Void) {
         guard let url = URL(string: "https://ip-api.com/json/") else {
             completion(nil)

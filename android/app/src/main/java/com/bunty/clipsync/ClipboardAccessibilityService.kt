@@ -27,8 +27,9 @@ class ClipboardAccessibilityService : AccessibilityService() {
     private var lastRootScanTime = 0L
     private var firestoreListener: com.google.firebase.firestore.ListenerRegistration? = null
 
-    // Direct clipboard listener commented out in favor of accessibility events
-    // for broader compatibility on Android 10+
+    // --- Service Description ---
+    // This service listens for 'Copy' events system-wide using Accessibility APIs.
+    // It is the workaround for Android 10+ restrictions on background clipboard access.
 
     companion object {
         private const val TAG = "ClipSync_Service"
@@ -139,10 +140,10 @@ class ClipboardAccessibilityService : AccessibilityService() {
 
                     var triggerType: String? = null
 
-                    // Logic:
-                    // 1. If it's a CLICK, we accept "Copy" or "Copied".
-                    // 2. If it's PASSIVE (Content Changed, etc.), we REJECT "Copy" (present tense) 
-                    //    to avoid triggering when a menu opens. We only accept "Copied" (past) or ID match.
+                    // --- Heuristic Detection Logic ---
+                    // 1. CLICK Events: We accept "Copy" or "Copied" text.
+                    // 2. PASSIVE Events: We REJECT "Copy" (imperative) to avoid false positives (menus).
+                    //    We only accept "Copied" (past tense) or specific View ID matches.
 
                     val hasCopy = (contentDesc.contains(
                         "copy",
@@ -169,8 +170,8 @@ class ClipboardAccessibilityService : AccessibilityService() {
                         }
                     }
 
-                    // 2. Event Source Deep Search
-                    // Only try if simple match failed. 
+                    // --- Strategy 2: Deep Search (DFS) ---
+                    // If simple event text match failed, traverse the Node Tree. 
                     // IMPORTANT: We pass 'isClick' to dfsFindCopy to apply the same strict rules depths-wise.
                     var source = event.source
                     if (triggerType == null && source != null) {
@@ -183,10 +184,8 @@ class ClipboardAccessibilityService : AccessibilityService() {
                         }
                     }
 
-                    // 3. Fallback: Check the ENTIRE screen (Root Window)
-                    // Optimization: Root scan is expensive.
-                    // - If WINDOW_STATE_CHANGED (New screen/popup): Scan immediately.
-                    // - Otherwise (Content change/Scroll): Throttle it to once every 2 seconds.
+                    // --- Strategy 3: Full Screen Scan (Fallback) ---
+                    // Expensive operation. Only triggered on Window State Changes or throttled (2s).
                     
                     val now = System.currentTimeMillis()
                     val isWindowStateChange = (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED)

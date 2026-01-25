@@ -68,15 +68,14 @@ fun ClipSyncNavigation(startDestination: String) {
         }
     }
 
-    // Dynamic Background based on Route
-    // MeshBackground is now persistent across all screens
+    // --- Dynamic Background (Persistent) ---
+    // MeshBackground stays active across all screens for seamless transitions
     MeshBackground(
         modifier = Modifier.fillMaxSize(),
         onPulse = isPulsing,
         isPaused = isPaused
     ) {
-        // Foreground Content
-
+        // --- Foreground Navigation ---
         NavHost(
             navController = navController,
             startDestination = startDestination
@@ -118,9 +117,9 @@ fun ClipSyncNavigation(startDestination: String) {
                                 Log.w("MainActivity", "Region mismatch. Restarting to switch region.")
                                 DeviceManager.setTargetRegion(context, qrRegion)
                                 
+                                // --- Auto-Restart for Region Switch ---
                                 android.os.Handler(android.os.Looper.getMainLooper()).post {
                                     Toast.makeText(context, "Switching Server Region... App will restart.", Toast.LENGTH_LONG).show()
-                                    // Trigger App Restart
                                     val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
                                     intent?.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK)
                                     context.startActivity(intent)

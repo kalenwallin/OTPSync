@@ -31,33 +31,31 @@ class ClipboardManager: ObservableObject {
     private let db = FirebaseManager.shared.db
     private var clipboardListener: ListenerRegistration?
     
-    private let sharedSecretHex = "5D41402ABC4B2A76B9719D911017C59228B4637452F80776313460C451152033"
+    private var sharedSecretHex: String {
+        return UserDefaults.standard.string(forKey: "encryption_key") ?? "5D41402ABC4B2A76B9719D911017C59228B4637452F80776313460C451152033"
+    }
     
     private var isListenerActive = false
     private var lastListenerUpdate = Date()
     
-    // IMPROVED: Start monitoring with DispatchSourceTimer (doesn't get suspended)
+    // --- Monitoring Strategy (Poller) ---
+    // Uses DispatchSourceTimer on a background queue to poll NSPasteboard changeCount.
+    // This avoids main thread blocking and "App Nap" suspension issues.
     func startMonitoring() {
         if isSyncPaused { return }
-        
-        // Stop any existing timer
         stopMonitoring()
         
         lastChangeCount = pasteboard.changeCount
         
-        // Create a dispatch timer on a background queue
         let queue = DispatchQueue(label: "com.clipsync.clipboard.monitor", qos: .userInitiated)
         let newTimer = DispatchSource.makeTimerSource(queue: queue)
         
-        // Fire every 300ms (0.3 seconds)
+        // Poll every 300ms
         newTimer.schedule(deadline: .now(), repeating: .milliseconds(300), leeway: .milliseconds(50))
         
         newTimer.setEventHandler { [weak self] in
             self?.checkClipboard()
         }
-        
-        newTimer.resume()
-        timer = newTimer
         
         newTimer.resume()
         timer = newTimer
@@ -137,11 +135,10 @@ class ClipboardManager: ObservableObject {
         }
     }
     
+    // --- Upload Logic ---
+    // Encrypts text using AES-GCM (Shared Key) and pushes to Firestore
     private func uploadClipboard(text: String) {
-        guard let pairingId = PairingManager.shared.pairingId else {
-            return
-        }
-        
+        guard let pairingId = PairingManager.shared.pairingId else { return }
         let macDeviceId = DeviceManager.shared.getDeviceId()
         
         guard let encryptedContent = encrypt(text) else {
@@ -165,11 +162,11 @@ class ClipboardManager: ObservableObject {
         }
     }
     
+    // --- Download Logic ---
+    // Real-time listener for incoming clipboard changes from Android
     func listenForAndroidClipboard(retryCount: Int = 0) {
         guard let pairingId = PairingManager.shared.pairingId else {
-    func listenForAndroidClipboard(retryCount: Int = 0) {
-        guard let pairingId = PairingManager.shared.pairingId else {
-
+            // Retry logic for startup race conditions
             if retryCount < 5 {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
                     self?.listenForAndroidClipboard(retryCount: retryCount + 1)
@@ -179,9 +176,6 @@ class ClipboardManager: ObservableObject {
         }
         
         stopListening()
-        
-        let macDeviceId = DeviceManager.shared.getDeviceId()
-        
         let macDeviceId = DeviceManager.shared.getDeviceId()
         
         isListenerActive = true
@@ -193,59 +187,40 @@ class ClipboardManager: ObservableObject {
             .limit(to: 1)
             .addSnapshotListener(includeMetadataChanges: false) { [weak self] snapshot, error in
                 guard let self = self else { return }
-                
                 self.lastListenerUpdate = Date()
                 
-                if self.isSyncPaused {
-                if self.isSyncPaused {
-                    return
-                }
+                if self.isSyncPaused || !self.syncToMac { return }
                 
-                guard self.syncToMac else {
-                    return
-                }
-                
-                if let error = error {
-                    // Check for permission errors or network issues
+                if error != nil {
+                     // Retry on temporary network/permission fail
                     DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
-
                         self?.listenForAndroidClipboard()
                     }
                     return
                 }
                 
-                guard let documents = snapshot?.documents, !documents.isEmpty else {
-                    return
-                }
-                
+                guard let documents = snapshot?.documents, !documents.isEmpty else { return }
                 let doc = documents[0].data()
                 
+                // Content Filter: Ignore own updates
                 guard let encryptedContent = doc["content"] as? String,
-                      let sourceDeviceId = doc["sourceDeviceId"] as? String else {
-                    return
-                }
+                      let sourceDeviceId = doc["sourceDeviceId"] as? String,
+                      sourceDeviceId != macDeviceId else { return }
                 
-                if sourceDeviceId == macDeviceId {
-                    return
-                }
-                
+                // DECRYPT
                 let content = self.decrypt(encryptedContent) ?? encryptedContent
                 
-                guard content != self.lastCopiedText else { return }
-                
+                // Duplicate Check
                 guard content != self.lastCopiedText else { return }
 
-                
                 DispatchQueue.main.async {
                     self.ignoreNextChange = true
                     self.pasteboard.clearContents()
                     self.pasteboard.setString(content, forType: .string)
                     self.lastCopiedText = content
                     
-                    if let lastItem = self.history.first, lastItem.content == content {
-
-                        return
-                    }
+                    // History Update (UI)
+                    if let lastItem = self.history.first, lastItem.content == content { return }
                     
                     let newItem = ClipboardItem(
                         content: content,
@@ -255,32 +230,22 @@ class ClipboardManager: ObservableObject {
                     )
                     self.history.insert(newItem, at: 0)
                     self.lastSyncedTime = Date()
-                    
-                    self.history.insert(newItem, at: 0)
-                    self.lastSyncedTime = Date()
                 }
             }
         
         startListenerWatchdog()
     }
-    
+
+    // --- Watchdog ---
+    // Restarts listener if no heartbeat for 60s (Fixes stale connection issues)
     private func startListenerWatchdog() {
         Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) { [weak self] timer in
-            guard let self = self else {
+            guard let self = self, self.isListenerActive else {
                 timer.invalidate()
                 return
             }
             
-            guard self.isListenerActive else {
-                timer.invalidate()
-                return
-            }
-            
-            let timeSinceLastUpdate = Date().timeIntervalSince(self.lastListenerUpdate)
-            
-            if timeSinceLastUpdate > 60 {
-                // Listener appears stale, restarting
-
+            if Date().timeIntervalSince(self.lastListenerUpdate) > 60 {
                 self.listenForAndroidClipboard()
             }
         }
@@ -292,8 +257,7 @@ class ClipboardManager: ObservableObject {
         isListenerActive = false
     }
     
-    // CRYPTO HELPERS
-    
+    // --- Crypto Helpers (AES-GCM) ---
     private func encrypt(_ string: String) -> String? {
         guard let data = string.data(using: .utf8) else { return nil }
         

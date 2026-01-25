@@ -29,7 +29,7 @@ struct MenuBarView: View {
     var body: some View {
         VStack(spacing: 0) {
             if showingRePairQR {
-                // MARK: - QR Code Mode (Minimalist)
+                // --- QR Mode (Minimalist) ---
                 VStack(spacing: 20) {
                     Text("Scan to connect")
                         .font(.system(size: 14, weight: .medium))
@@ -69,7 +69,7 @@ struct MenuBarView: View {
                 .onDisappear { pairingManager.stopListening() }
                 
             } else {
-                // MARK: - Main Menu Mode (Elegant)
+                // --- Main Menu Mode ---
                 VStack(spacing: 16) {
                     
                     // Header: Status Area
@@ -192,7 +192,7 @@ struct MenuBarView: View {
         return "Synced " + formatter.localizedString(for: date, relativeTo: Date())
     }
     
-    // MARK: - Auth Logic
+    // --- Biometric Auth (Re-Pair) ---
     func authenticateUser() {
         if isAuthenticating { return } // Guard against double clicks
         isAuthenticating = true

@@ -21,13 +21,13 @@ struct LandingScreen: View {
         NavigationStack {
             GeometryReader { geometry in
                 ZStack {
-                    // Animated Mesh Background
+                    // --- Animated Mesh ---
                     MeshBackground(shouldAnimate: !isBackgroundPaused)
                         .ignoresSafeArea()
                     
-                    // Content container - centered in available space
+                    // --- Content Layout ---
                     ZStack {
-                        // Title Section (Top)
+                        // Title Section
                         VStack(spacing: 8) {
                             Text("ClipSync")
                                 .font(.custom("SF Pro Display", size: 64))

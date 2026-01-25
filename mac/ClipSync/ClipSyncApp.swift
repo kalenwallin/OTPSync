@@ -22,7 +22,8 @@ struct ClipSyncApp: App {
             "syncFromMac": true
         ])
         
-        // Auto-Detect Region (Every Launch)
+        // --- Region Auto-Detection ---
+        // Determines Cloud Region (US vs IN) based on IP for optimal latency
         LocationHelper.shared.detectRegion { country in
             // European Countries (Better latency to US than IN)
             let euCountries = ["ES", "FR", "DE", "IT", "UK", "GB", "NL", "BE", "SE", "NO", "DK", "FI", "IE", "PT", "GR", "AT", "CH", "PL", "CZ", "HU", "RO"]
@@ -30,35 +31,24 @@ struct ClipSyncApp: App {
             let region: String
             if let country = country, (country == "US" || euCountries.contains(country)) {
                 region = RegionConfig.REGION_US
-                print("🇺🇸 Auto-detected US/EU Region (\(country)) -> Using US Server")
             } else {
                 region = RegionConfig.REGION_INDIA
-                print("📍 Auto-detected Region (\(country ?? "Unknown")) -> Using IN Server")
             }
             
-            // Check if region changed
+            // Persist region change
             let current = UserDefaults.standard.string(forKey: "server_region")
             if current != region {
                 UserDefaults.standard.set(region, forKey: "server_region")
             }
         }
         
-        // Initialize Firebase
+        // --- Firebase & Sync Initialization ---
         _ = FirebaseManager.shared
-        // Initialize Firebase
-        _ = FirebaseManager.shared
-
-        
-        // Restore previous pairing
         PairingManager.shared.restorePairing()
         
-        // AUTO-START SYNC if paired
         if PairingManager.shared.isPaired {
-            // Auto-start sync if previously paired
-        if PairingManager.shared.isPaired {
-
-            ClipboardManager.shared.startMonitoring()
-            ClipboardManager.shared.listenForAndroidClipboard()
+             ClipboardManager.shared.startMonitoring()
+             ClipboardManager.shared.listenForAndroidClipboard()
         }
         
             ClipboardManager.shared.listenForAndroidClipboard()
@@ -220,12 +210,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             object: nil
         )
         
-        // Initial Policy Check
+        // --- Background Fetch Logic ---
+        // Updates dock policy based on window visibility to support "Accessory" mode
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             self.updateDockPolicy()
         }
         
-        // Prevent app from sleeping (keeps clipboard sync active)
+        // Prevent App Nap
         preventAppSleep()
     }
     

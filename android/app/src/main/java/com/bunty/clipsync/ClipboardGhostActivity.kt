@@ -11,8 +11,10 @@ import android.util.Log
 import android.widget.Toast
 
 /**
- * A transparent "Ghost" activity that launches, sets the clipboard, and finishes immediately.
- * This is a workaround for Android 10+ background clipboard restrictions.
+ * --- Background Clipboard Hack ---
+ * Android 10+ blocks background services from reading the clipboard.
+ * This transparent Activity launches briefly to gain 'Foreground' status, 
+ * reads/writes simple text, and then instantly closes.
  */
 class ClipboardGhostActivity : Activity() {
 
@@ -20,6 +22,8 @@ class ClipboardGhostActivity : Activity() {
 
     companion object {
         const val EXTRA_CLIP_TEXT = "extra_clip_text"
+        
+        // --- Intent Actions ---
         const val ACTION_READ = "action_read"
         const val ACTION_WRITE = "action_write"
 
@@ -68,16 +72,16 @@ class ClipboardGhostActivity : Activity() {
         // For READ mode, wait for onWindowFocusChanged
     }
 
+    // --- Window Focus Logic (Read Mode) ---
+    // We must wait for 'onWindowFocusChanged' to be true before Android allows clipboard read.
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        Log.d("ClipboardGhost", "onWindowFocusChanged: hasFocus=$hasFocus, action=${intent.action}, hasReadClipboard=$hasReadClipboard")
-
+        
         // Only read when we have focus and it's a READ action
         if (hasFocus && intent.action == ACTION_READ && !hasReadClipboard) {
             hasReadClipboard = true
             // Post to ensure we're fully focused
             window.decorView.post {
-                Log.d("ClipboardGhost", "Window has focus, reading clipboard now...")
                 readClipboardAndFinish()
             }
         }

@@ -37,18 +37,21 @@ struct SplashScreen: View {
             }
         }
         .frame(width: frameSize, height: frameSize)
+        }
+        .frame(width: frameSize, height: frameSize)
         .onAppear {
-            // Step 1: Expand the orb from tiny → full 590x590 (Faster: 1.8s)
+            // --- Reveal Sequence ---
+            // 1. Expand the orb from tiny → full 590x590 (Faster: 1.8s)
             withAnimation(.easeInOut(duration: 1.8)) {
                 progress = 1.0
             }
 
-            // Step 2: Start the mesh oscillation near the end of expansion
+            // 2. Start the mesh oscillation near the end of expansion
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                 startOscillation = true
             }
 
-            // Step 3: Show landing elements after mesh is full
+            // 3. Show landing elements after mesh is full
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
                 withAnimation(.easeInOut(duration: 0.6)) {
                     showLanding = true

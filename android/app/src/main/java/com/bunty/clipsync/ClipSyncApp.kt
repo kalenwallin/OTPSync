@@ -9,7 +9,7 @@ class ClipSyncApp : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        // Initialize Firebase based on Region
+        // --- Firebase Initialization (Region Aware) ---
         val region = DeviceManager.getTargetRegion(this)
         DeviceManager.initializedRegion = region // Record what we acted on
         val options = RegionConfig.getOptionsForRegion(this, region)
@@ -25,7 +25,7 @@ class ClipSyncApp : Application() {
                 Log.d("ClipSync", "Initialized with Default Region (IN)")
             }
             
-            // Fix: Sign in anonymously to satisfy Firestore Security Rules
+            // --- Anonymous Authentication (Required for Firestore Rules) ---
             signInAnonymously()
             
         } catch (e: Exception) {

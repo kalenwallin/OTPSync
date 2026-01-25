@@ -8,6 +8,8 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 object UpdateChecker {
+    // --- API Configuration ---
+    // Fetches latest release tag from GitHub public API
     private const val TAG = "UpdateChecker"
     private const val REPO_OWNER = "WinShell-Bhanu"
     private const val REPO_NAME = "Clipsync"
@@ -59,6 +61,8 @@ object UpdateChecker {
         }
     }
 
+    // --- Version Logic ---
+    // Compares semantic versioning strings (e.g. 1.0.0 vs 1.0.1)
     private fun isVersionNewer(current: String, latest: String): Boolean {
         try {
             val currentParts = current.split(".").map { it.toIntOrNull() ?: 0 }

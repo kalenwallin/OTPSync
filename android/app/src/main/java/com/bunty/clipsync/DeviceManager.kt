@@ -7,10 +7,13 @@ import java.util.UUID
 
 object DeviceManager {
     private const val PREFS_NAME = "clipsync_prefs"
+    
+    // --- Preference Keys ---
     private const val KEY_PAIRED = "is_paired"
     private const val KEY_PAIRED_DEVICE_ID = "paired_device_id"
     private const val KEY_PAIRED_DEVICE_NAME = "paired_device_name"
     private const val KEY_PAIRING_ID = "pairing_id"
+    private const val KEY_ENCRYPTION_KEY = "encryption_key" 
     private const val KEY_ANDROID_DEVICE_ID = "android_device_id"
     private const val KEY_ANDROID_DEVICE_NAME = "android_device_name"
     private const val KEY_SYNC_TO_MAC = "sync_to_mac"
@@ -105,9 +108,21 @@ object DeviceManager {
             remove(KEY_PAIRING_ID)
             remove(KEY_PAIRED_DEVICE_ID)
             remove(KEY_PAIRED_DEVICE_NAME)
+            remove(KEY_PAIRED_DEVICE_NAME)
+            remove(KEY_ENCRYPTION_KEY) // Clear key on unpair
             // Keep sync preferences or reset? Let's keep them for convenience.
             apply()
         }
+    }
+
+    // Dynamic Encryption Key
+    fun getEncryptionKey(context: Context): String {
+        return getPrefs(context).getString(KEY_ENCRYPTION_KEY, null) 
+            ?: "5D41402ABC4B2A76B9719D911017C59228B4637452F80776313460C451152033" // Legacy Fallback
+    }
+
+    fun saveEncryptionKey(context: Context, key: String) {
+        getPrefs(context).edit().putString(KEY_ENCRYPTION_KEY, key).apply()
     }
 
     fun isSyncToMacEnabled(context: Context): Boolean {

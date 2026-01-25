@@ -6,7 +6,9 @@ struct ConnectedScreen: View {
     @StateObject private var pairingManagerr = PairingManager.shared
     @State private var navigateToFinal = false
     
-    // Animation States
+    @State private var navigateToFinal = false
+    
+    // --- Animation States ---
     @State private var titleOpacity: Double = 0
     @State private var titleOffset: CGFloat = -30
     @State private var subtitleOpacity: Double = 0
@@ -22,7 +24,7 @@ struct ConnectedScreen: View {
 
     var body: some View {
         ZStack {
-            // Background
+            // --- Background ---
             MeshBackground()
                 .ignoresSafeArea()
             
@@ -73,7 +75,7 @@ struct ConnectedScreen: View {
             .opacity(buttonOpacity)
         }
         .frame(width: 590, height: 590)
-        .ignoresSafeArea() // ✅ FIXED - Now content extends to edges!
+        .ignoresSafeArea() // Extends to window edges
         .onAppear {
             print("🔄 Starting clipboard sync...")
             ClipboardManager.shared.startMonitoring()

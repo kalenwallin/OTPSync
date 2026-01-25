@@ -55,7 +55,7 @@ fun MeshBackground(
         label = "speed"
     )
 
-    // Manual Animation Loop
+    // --- Animation Loop ---
     LaunchedEffect(Unit) {
         val startTime = withFrameNanos { it }
         while (true) {
@@ -72,7 +72,7 @@ fun MeshBackground(
             .fillMaxSize()
             .background(baseColor)
     ) {
-        // The Mesh Canvas
+        // --- Canvas Drawing ---
         Canvas(
             modifier = Modifier
                 .fillMaxSize()

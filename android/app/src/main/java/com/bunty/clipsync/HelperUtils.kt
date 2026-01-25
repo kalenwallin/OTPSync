@@ -3,7 +3,8 @@ package com.bunty.clipsync
 import java.util.regex.Pattern
 
 object HelperUtils {
-    // Regex for:
+    // --- OTP Pattern Matcher ---
+    // Regex strategies:
     // 1. 4-8 digits surrounded by word boundaries: \b\d{4,8}\b
     // 2. 3 digits -/space 3 digits: \b\d{3}[-\s]\d{3}\b
     // 3. Alphanumeric codes like G-123456: \b[A-Za-z]{0,3}-?\d{4,8}\b

@@ -35,6 +35,7 @@ fun CameraQRScanner(
     onQRCodeScanned: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // --- Permission Handling ---
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraPermissionState = rememberPermissionState(Manifest.permission.CAMERA)
@@ -44,6 +45,7 @@ fun CameraQRScanner(
     var scannedQRCode by remember { mutableStateOf<String?>(null) }
     var cameraProvider by remember { mutableStateOf<ProcessCameraProvider?>(null) }
 
+    // --- Scanning Logic ---
     // Instant navigation after brief animation
     LaunchedEffect(showLoading) {
         if (showLoading && scannedQRCode != null) {
@@ -64,7 +66,7 @@ fun CameraQRScanner(
 
     Box(modifier = modifier.fillMaxSize()) {
         if (cameraPermissionState.status.isGranted) {
-            // Camera Preview Layer
+            // --- Camera Preview Layer ---
             if (!showLoading) {
                 AndroidView(
                     factory = { ctx ->
@@ -160,6 +162,7 @@ private fun processImageProxy(
     imageProxy: ImageProxy,
     onQRCodeDetected: (String) -> Unit
 ) {
+    // --- Image Analysis (ML Kit) ---
     val mediaImage = imageProxy.image
     if (mediaImage != null) {
         val image = InputImage.fromMediaImage(

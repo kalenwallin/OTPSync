@@ -8,6 +8,7 @@ object RegionConfig {
     const val REGION_INDIA = "IN"
     const val REGION_US = "US"
 
+    // --- Environment Credentials ---
     // US Project Credentials (clipsync1-c3c3c)
     private const val US_PROJECT_ID = "clipsync1-c3c3c" 
     private const val US_APPLICATION_ID = "1:421995011629:android:1895288aa3d34ca18a22a4"

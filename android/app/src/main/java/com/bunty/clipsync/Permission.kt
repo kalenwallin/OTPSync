@@ -58,7 +58,7 @@ fun PermissionPage(onFinishSetup: () -> Unit = {}) {
     var overlayGranted by remember { mutableStateOf(false) }
     var notificationAccessGranted by remember { mutableStateOf(false) }
 
-    // Animation States - Staggered entrance
+    // --- Animation Sequence (Staggered Entrance) ---
     var showHeader by remember { mutableStateOf(false) }
     var showCard by remember { mutableStateOf(false) }
     var showItem1 by remember { mutableStateOf(false) }
@@ -381,29 +381,21 @@ fun isAccessibilityServiceEnabled(context: android.content.Context): Boolean {
             Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
         ) ?: return false
 
-        Log.d("AccessibilityCheck", "=====================")
-        Log.d("AccessibilityCheck", "Full enabled string: $enabledServices")
+        Log.d("AccessibilityCheck", "Enabled Services: $enabledServices")
 
         // Check if ANY of these patterns match
         val possibleNames = listOf(
             "com.bunty.clipsync/com.bunty.clipsync.ClipboardAccessibilityService",
             "com.bunty.clipsync/.ClipboardAccessibilityService",
             "ClipboardAccessibilityService",
-            "ClipSync"
+            "ClipSync" // Some ROMs just show the label
         )
 
         for (name in possibleNames) {
             if (enabledServices.contains(name, ignoreCase = true)) {
-                Log.d("AccessibilityCheck", "FOUND with pattern: $name")
-                Log.d("AccessibilityCheck", "RESULT: TRUE ✓")
-                Log.d("AccessibilityCheck", "=====================")
                 return true
             }
         }
-
-        Log.d("AccessibilityCheck", "NOT FOUND")
-        Log.d("AccessibilityCheck", "RESULT: FALSE ✗")
-        Log.d("AccessibilityCheck", "=====================")
         return false
 
     } catch (e: Exception) {

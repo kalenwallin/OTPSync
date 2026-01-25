@@ -57,11 +57,9 @@ val BackgroundColor = Color(0xFFB1C2F6)
 fun LandingScreen(
     onGetStartedClick: () -> Unit = {}
 ) {
-    // Responsive scaling based on screen size
-    val configuration = LocalConfiguration.current
-    val screenWidth = configuration.screenWidthDp.dp
-    val screenHeight = configuration.screenHeightDp.dp
-    // Use 412x915 as reference design dimensions
+    // --- Responsiveness ---
+    // Reference Design: 412x915 dp
+    // Scales all UI elements proportionally to screen size
     val widthScale = screenWidth.value / 412f
     val heightScale = screenHeight.value / 915f
     val scale = min(widthScale, heightScale)
@@ -85,10 +83,11 @@ fun LandingScreen(
         showCard = true
     }
 
-    // Location Detection (IP-based)
+    // --- Region Auto-Detection ---
+    // Checks IP location on first launch to route EU users to US servers (Lower Latency)
+    // Fallback: India (IN) for rest of world
     val context = LocalContext.current
     LaunchedEffect(Unit) {
-        // Only check if region is not already explicitly set (fresh install)
         if (!DeviceManager.isRegionSet(context)) {
             val countryCode = LocationHelper.detectCountryCode() ?: "IN" // Default to IN if null
             

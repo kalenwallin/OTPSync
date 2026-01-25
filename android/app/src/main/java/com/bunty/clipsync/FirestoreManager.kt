@@ -9,39 +9,23 @@ import org.json.JSONObject
 object FirestoreManager {
     private val db = FirebaseFirestore.getInstance()
 
-    // Hardcoded shared secret (Must match Mac side)
-    private const val SHARED_SECRET_HEX = "5D41402ABC4B2A76B9719D911017C59228B4637452F80776313460C451152033"
+    // Dynamic Secret Retrieval
+    private fun getSharedSecret(context: Context): String {
+        return DeviceManager.getEncryptionKey(context)
+    }
 
-    // Parse QR code data - Supports Encrypted and Legacy formats
-    fun parseQRData(qrData: String): Map<String, Any>? {
-        Log.d("FirestoreManager", "Parsing QR Data (Length: ${qrData.length})")
-
-        var jsonDataString = qrData
-
-        // 1. Try to Decrypt if it doesn't look like JSON/Legacy
-        if (!qrData.trim().startsWith("{") && !qrData.contains("|")) {
-            Log.d("FirestoreManager", "Data looks encrypted, attempting decryption...")
-            try {
-                val decrypted = decryptData(qrData)
-                if (decrypted.isNotEmpty()) {
-                    Log.d("FirestoreManager", "Decryption success! JSON: $decrypted")
-                    jsonDataString = decrypted
-                }
-            } catch (e: Exception) {
-                Log.e("FirestoreManager", "Decryption failed: ${e.message}")
-                // Don't return null yet, maybe it's just a raw ID...
-            }
-        }
-
-        return try {
-            // Case 1: JSON Format (New Mac App)
-            if (jsonDataString.trim().startsWith("{")) {
-                val jsonObject = JSONObject(jsonDataString)
+    // --- QR Parsing Strategy ---
+    // Supports:
+    // 1. JSON (New V1 Format) - Contains {server, secret, macId}
+    // 2. Legacy - Fallback for older versions
+        try {
+            if (qrData.trim().startsWith("{")) {
+                val jsonObject = JSONObject(qrData)
                 val macId = jsonObject.optString("macId")
-                // Check both "deviceName" and "macDeviceName" just in case
                 val deviceName = jsonObject.optString("deviceName").ifEmpty {
                     jsonObject.optString("macDeviceName", "Mac")
                 }
+                val secret = jsonObject.optString("secret") // Extract new key
 
                 if (macId.isNotEmpty()) {
                     return mapOf(
@@ -49,50 +33,27 @@ object FirestoreManager {
                         "macDeviceName" to deviceName,
                         "serverRegion" to jsonObject.optString("server").ifEmpty {
                             jsonObject.optString("serverRegion", "IN")
-                        }
+                        },
+                        "secret" to secret
                     )
                 }
             }
-
-            // Case 2: Legacy Pipe Format "ID|Name" (Old version)
-            val parts = jsonDataString.split("|")
-            if (parts.size >= 2) {
-                return mapOf(
-                    "macDeviceId" to parts[0],
-                    "macDeviceName" to (parts.getOrNull(1) ?: "Mac"),
-                    "serverRegion" to "IN"
-                )
-            }
-
-            // Case 3: Just ID (Raw or Failed Decryption Fallback)
-            if (jsonDataString.isNotEmpty() && !jsonDataString.contains("|") && !jsonDataString.contains("{")) {
-                return mapOf(
-                    "macDeviceId" to jsonDataString,
-                    "macDeviceName" to "Mac",
-                    "serverRegion" to "IN"
-                )
-            }
-
-            Log.e("FirestoreManager", "Invalid QR format")
-            null
+            return null
         } catch (e: Exception) {
-            Log.e("FirestoreManager", "Failed to parse QR data", e)
-            null
+            return null
         }
     }
 
-    // Decrypt AES-GCM Base64 String
-    private fun decryptData(encryptedBase64: String): String {
+    // --- Encryption Helpers (AES-GCM) ---
+    // Uses the Dynamic Key (swapped via QR) to secure clipboard data.
+    private fun decryptData(context: Context, encryptedBase64: String): String {
         try {
             val encryptedBytes = android.util.Base64.decode(encryptedBase64, android.util.Base64.NO_WRAP)
-            
-            // Expected format: IV (12 bytes) + Ciphertext + Tag (16 bytes)
             if (encryptedBytes.size < 28) return ""
 
-            val keyBytes = hexStringToByteArray(SHARED_SECRET_HEX)
+            val keyBytes = hexStringToByteArray(getSharedSecret(context)) // Use Dynamic Key
             val keySpec = javax.crypto.spec.SecretKeySpec(keyBytes, "AES")
 
-            // Extract IV
             val iv = encryptedBytes.copyOfRange(0, 12)
             val ciphertext = encryptedBytes.copyOfRange(12, encryptedBytes.size)
 
@@ -104,20 +65,17 @@ object FirestoreManager {
 
             return String(plaintextBytes, Charsets.UTF_8)
         } catch (e: Exception) {
-            // Log.e("FirestoreManager", "Decryption error", e) // Optional logging
             throw e
         }
     }
 
     // Encrypt AES-GCM -> Base64 String
-    private fun encryptData(plainText: String): String {
+    private fun encryptData(context: Context, plainText: String): String {
         try {
-            val keyBytes = hexStringToByteArray(SHARED_SECRET_HEX)
+            val keyBytes = hexStringToByteArray(getSharedSecret(context)) // Use Dynamic Key
             val keySpec = javax.crypto.spec.SecretKeySpec(keyBytes, "AES")
 
             val cipher = javax.crypto.Cipher.getInstance("AES/GCM/NoPadding")
-            
-            // Generate random IV
             val iv = ByteArray(12)
             java.security.SecureRandom().nextBytes(iv)
             
@@ -126,7 +84,6 @@ object FirestoreManager {
 
             val ciphertext = cipher.doFinal(plainText.toByteArray(Charsets.UTF_8))
 
-            // Combine IV + Ciphertext
             val combined = ByteArray(iv.size + ciphertext.size)
             System.arraycopy(iv, 0, combined, 0, iv.size)
             System.arraycopy(ciphertext, 0, combined, iv.size, ciphertext.size)
@@ -134,7 +91,7 @@ object FirestoreManager {
             return android.util.Base64.encodeToString(combined, android.util.Base64.NO_WRAP)
         } catch (e: Exception) {
             Log.e("FirestoreManager", "Encryption failed", e)
-            return plainText // Fallback (should ideally handle error better)
+            return plainText
         }
     }
 
@@ -149,7 +106,9 @@ object FirestoreManager {
         return data
     }
 
-    // Create pairing in Firestore
+    // --- Firestore Operations ---
+
+    // Create a new pairing document
     fun createPairing(
         context: Context,
         qrData: Map<String, Any>,
@@ -160,6 +119,13 @@ object FirestoreManager {
         val androidDeviceName = DeviceManager.getAndroidDeviceName()
         val macDeviceId = qrData["macDeviceId"] as? String ?: ""
         val macDeviceName = qrData["macDeviceName"] as? String ?: "Mac"
+        val secret = qrData["secret"] as? String
+        
+        // SAVE SECRET
+        if (!secret.isNullOrEmpty()) {
+            DeviceManager.saveEncryptionKey(context, secret)
+            Log.d("FirestoreManager", "Secure Key Swapped & Saved 🔐")
+        }
 
         val pairingData = hashMapOf<String, Any>(
             "androidDeviceId" to androidDeviceId,
@@ -171,6 +137,7 @@ object FirestoreManager {
             "timestamp" to com.google.firebase.Timestamp.now(),
             "status" to "active"
         )
+
 
         // Helper to actually create the NEW pairing
         fun createNewPairing() {
@@ -216,7 +183,9 @@ object FirestoreManager {
         }
     }
 
-    // Listen to clipboard changes from Firestore (DECRYPTING)
+    // --- Clipboard Syncing ---
+
+    // Listen for incoming clipboard changes (Decryption happens here)
     fun listenToClipboard(
         context: Context,
         onClipboardUpdate: (String) -> Unit
@@ -242,7 +211,7 @@ object FirestoreManager {
                     if (encryptedContent != null && sourceDeviceId != currentDeviceId) {
                          // DECRYPT HERE
                          try {
-                             val decryptedContent = decryptData(encryptedContent)
+                             val decryptedContent = decryptData(context, encryptedContent)
                              if (decryptedContent.isNotEmpty()) {
                                  onClipboardUpdate(decryptedContent)
                              }
@@ -270,7 +239,7 @@ object FirestoreManager {
         val deviceId = DeviceManager.getDeviceId(context)
 
         // ENCRYPT HERE
-        val encryptedContent = encryptData(text)
+        val encryptedContent = encryptData(context, text)
 
         val clipboardData = hashMapOf<String, Any>(
             "content" to encryptedContent,

@@ -11,6 +11,8 @@ import java.io.InputStreamReader
 
 object LocationHelper {
 
+    // --- IP Location Detection ---
+    // Used to route user to the nearest Cloud Functions region (US vs IN)
     suspend fun detectCountryCode(): String? {
         return withContext(Dispatchers.IO) {
             try {

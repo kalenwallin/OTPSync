@@ -13,14 +13,14 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         // For now, we just log it. The token retrieval is usually handled in UI or DeviceManager logic.
         val context = applicationContext
         if (DeviceManager.isPaired(context)) {
-            // OPTIONAL: Update token in Firestore for this device
+             // Token update logic if needed
         }
     }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         Log.d("FCM", "From: ${remoteMessage.from}")
 
-        // Check if message contains data payload.
+        // --- Message Receiver ---
         if (remoteMessage.data.isNotEmpty()) {
             Log.d("FCM", "Message data payload: ${remoteMessage.data}")
             

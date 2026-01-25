@@ -12,11 +12,22 @@ class QRCodeGenerator: ObservableObject {
     private let context = CIContext()
     private let filter = CIFilter.qrCodeGenerator()
     
-    // Hardcoded shared secret (Must match Android side)
-    // 32 bytes = 256 bits for AES-256
-    private let sharedSecretHex = "5D41402ABC4B2A76B9719D911017C59228B4637452F80776313460C451152033"
+    // --- Dynamic Secret Management ---
+    // Generates/Retrieves a persistent secret key for this Mac
+    private var sharedSecretHex: String {
+        get {
+            if let savedKey = UserDefaults.standard.string(forKey: "encryption_key") {
+                return savedKey
+            }
+            // Generate new key if missing
+            let newKey = generateRandomHexKey()
+            UserDefaults.standard.set(newKey, forKey: "encryption_key")
+            return newKey
+        }
+    }
     
-    // Generate QR code with Encrypted Mac Device ID
+    // --- Encryption Handshake ---
+    // Encrypts Mac Identity + Region + Secret into a QR payload
     func generateQRCode() {
         let macDeviceId = DeviceManager.shared.getDeviceId()
         
@@ -27,7 +38,10 @@ class QRCodeGenerator: ObservableObject {
         let jsonDict: [String: String] = [
             "macId": macDeviceId,
             "deviceName": macName,
-            "server": currentRegion // ✅ Tell Phone which server to use
+            "macId": macDeviceId,
+            "deviceName": macName,
+            "server": currentRegion, // ✅ Tell Phone which server to use
+            "secret": sharedSecretHex // ✅ Send Dynamic Key
         ]
         
         var plainTextData: Data?
@@ -35,7 +49,7 @@ class QRCodeGenerator: ObservableObject {
             plainTextData = jsonData
         } else {
              // Fallback manual JSON
-             let jsonString = "{\"macId\":\"\(macDeviceId)\",\"deviceName\":\"\(macName)\",\"server\":\"\(currentRegion)\"}"
+             let jsonString = "{\"macId\":\"\(macDeviceId)\",\"deviceName\":\"\(macName)\",\"server\":\"\(currentRegion)\",\"secret\":\"\(sharedSecretHex)\"}"
              plainTextData = jsonString.data(using: .utf8)
         }
         
@@ -70,7 +84,7 @@ class QRCodeGenerator: ObservableObject {
         
         print("🔲 Generating QR Code...")
         
-        // Generate QR image
+        // --- Image Generation (CoreImage) ---
         let data = Data(pairingCode.utf8)
         filter.setValue(data, forKey: "inputMessage")
         filter.setValue("L", forKey: "inputCorrectionLevel")
@@ -113,5 +127,15 @@ class QRCodeGenerator: ObservableObject {
         return data
     }
     // Fixed Helper naming conflict potentially - ensuring it's private
+    private func generateRandomHexKey() -> String {
+        var bytes = [UInt8](repeating: 0, count: 32)
+        let status = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
+        
+        if status == errSecSuccess {
+            return bytes.map { String(format: "%02hhX", $0) }.joined()
+        }
+        print("❌ Failed to generate random key, falling back to legacy default (NOT SECURE)")
+        return "5D41402ABC4B2A76B9719D911017C59228B4637452F80776313460C451152033"
+    }
 }
 

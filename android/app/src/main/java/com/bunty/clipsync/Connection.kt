@@ -52,8 +52,7 @@ fun ConnectionPage(
     // Get the paired device name dynamically
     val pairedDeviceName = DeviceManager.getPairedMacDeviceName(context)
 
-    // Listens for clipboard items removed to avoid confusion.
-    // The background Service handles all clipboard sync.
+    // --- UI Setup ---
 
     val backgroundColor = Color(0xFFB1C2F6)
     val robotoFontFamily = FontFamily(
@@ -63,11 +62,13 @@ fun ConnectionPage(
         Font(R.font.roboto_black, FontWeight.Black)
     )
 
+    // --- Animation States ---
+
     // Typewriter Effect
     val fullText = "You're Connected"
     var displayedText by remember { mutableStateOf("") }
-
-    // Exit Animation
+    
+    // Exit & Transition
     var isExiting by remember { mutableStateOf(false) }
     val buttonScale = remember { Animatable(1f) }
     val scope = rememberCoroutineScope()

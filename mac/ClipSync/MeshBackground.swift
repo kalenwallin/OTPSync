@@ -27,12 +27,13 @@ struct MeshBackground: View {
 
     var body: some View {
         ZStack {
-            // Base layer
+            // --- Base Layer ---
             // Base layer
             baseColor
                 .opacity(introProgress) // Fade in base layer
                 .ignoresSafeArea()
 
+            // --- Blobs ---
             blob(
                 color: lightBlue.opacity(0.9),
                 baseSize: 600,
@@ -80,7 +81,7 @@ struct MeshBackground: View {
         .enableInjection()
     }
 
-    // MARK: - Blob builder
+    // --- Blob Builder ---
     private func blob(
         color: Color,
         baseSize: CGFloat,

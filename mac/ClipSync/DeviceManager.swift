@@ -11,6 +11,7 @@ class DeviceManager {
     
     private let deviceIdKey = "mac_device_id"
     
+    // --- Device Identity ---
     // Get or create unique Mac device ID (Randomly generated, not hardware serial)
     func getDeviceId() -> String {
         // Check if already exists in UserDefaults
@@ -27,6 +28,7 @@ class DeviceManager {
         return deviceId
     }
     
+    // --- Name Formatting ---
     // Get Mac computer name (for display in Android)
     func getMacName() -> String {
         return Host.current().localizedName ?? "Mac"

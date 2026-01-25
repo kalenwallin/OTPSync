@@ -14,12 +14,12 @@ class UpdateChecker: ObservableObject {
     @Published var downloadURL: URL?
     @Published var releaseNotes: String = ""
 
+    // --- GitHub API Config ---
     private let repoOwner = "WinShell-Bhanu"
     private let repoName = "Clipsync"
-    
-    // Fallback if Bundle version is missing
     private let currentVersion = "1.0.0" 
 
+    // --- Update Check Logic ---
     func checkForUpdates() {
         let urlString = "https://api.github.com/repos/\(repoOwner)/\(repoName)/releases/latest"
         guard let url = URL(string: urlString) else { return }
@@ -46,6 +46,7 @@ class UpdateChecker: ObservableObject {
         }.resume()
     }
 
+    // --- Version Comparison ---
     private func compareVersions(latestTag: String, release: GitHubRelease) {
         let cleanLatest = latestTag.replacingOccurrences(of: "v", with: "")
         

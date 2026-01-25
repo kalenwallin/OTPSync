@@ -21,32 +21,25 @@ class PairingManager: ObservableObject {
     private let db = FirebaseManager.shared.db
     private var listenStartTime: Date?
     
-    // Listen for Android to scan QR and create pairing
+    // --- Pairing Handshake ---
+    // Listens for a new document in 'pairings' collection with matching macId
     func listenForPairing(macDeviceId: String) {
-        guard !isPaired else {
-            return
-        }
+        guard !isPaired else { return }
         
-        // Record when we started listening (with buffer for clock skew)
+        // Time window: Only accept pairings created AFTER now
         listenStartTime = Date().addingTimeInterval(-60)
         
-        // Clear any previous errors
-        DispatchQueue.main.async {
-            self.pairingError = nil
-        }
+        DispatchQueue.main.async { self.pairingError = nil }
         
-        // Wait for Auth to complete before listening - WITH ERROR HANDLING
+        // Ensure Auth before listening
         FirebaseManager.shared.waitForAuth(timeout: 20.0) { [weak self] success in
             guard let self = self else { return }
-            
             if !success {
-                // Handle auth failure
                 DispatchQueue.main.async {
                     self.pairingError = "Connection failed. Check internet and restart app."
                 }
                 return
             }
-            
             self.startFirestoreListener(macDeviceId: macDeviceId)
         }
     }
@@ -116,13 +109,10 @@ class PairingManager: ObservableObject {
     
     private func processPairingData(_ doc: QueryDocumentSnapshot) {
         let data = doc.data()
-        
-        // Validate required fields
-        guard let androidDeviceName = data["androidDeviceName"] as? String else {
-        }
+        guard let androidDeviceName = data["androidDeviceName"] as? String else { return }
+        let pairingId = doc.documentID
 
-        
-        // Save pairing info
+        // Save State (Memory)
         DispatchQueue.main.async {
             self.pairingId = pairingId
             self.pairedDeviceName = androidDeviceName
@@ -130,39 +120,31 @@ class PairingManager: ObservableObject {
             self.pairingError = nil
         }
         
-        // Store locally for persistence
-        UserDefaults.standard.set(pairingId, forKey: "current_pairing_id")
-        UserDefaults.standard.set(androidDeviceName, forKey: "paired_device_name")
+        // Persistence (Disk)
         UserDefaults.standard.set(pairingId, forKey: "current_pairing_id")
         UserDefaults.standard.set(androidDeviceName, forKey: "paired_device_name")
         
-        // Start monitoring for unpairing
+        // Start Unpair Watcher
         self.startMonitoringPairingStatus(pairingId: pairingId)
         
-        // Stop listening after successful pairing
+        // Cleanup Listener
         self.pairingListener?.remove()
-        self.pairingListener = nil
         self.pairingListener = nil
     }
     
-    // Start constantly monitoring the pairing document
+    // --- Persistence & Restoration ---
+    
+    // Monitors for remote unpair (deletion of document)
     func startMonitoringPairingStatus(pairingId: String) {
         unpairingListener?.remove()
-        
-        unpairingListener?.remove()
 
-        
         unpairingListener = db.collection("pairings").document(pairingId)
             .addSnapshotListener { [weak self] snapshot, error in
                 guard let self = self else { return }
                 
-                if let error = error {
-                if let error = error {
-                    // Monitor error
-                    return
-                }
+                if error != nil { return }
                 
-                if let snapshot = snapshot, !snapshot.exists {
+                // If document is gone, we are unpaired
                 if let snapshot = snapshot, !snapshot.exists {
                     self.unpair()
                 }
@@ -203,7 +185,8 @@ class PairingManager: ObservableObject {
         ClipboardManager.shared.stopListening()
     }
     
-    // Restore previous pairing on app launch
+    // Restore previous pairing on app launch (with Boot Time check)
+    // If system rebooted > 120s ago vs saved time, invalidates pairing (Security)
     func restorePairing() {
         if let savedPairingId = UserDefaults.standard.string(forKey: "current_pairing_id"),
            let savedDeviceName = UserDefaults.standard.string(forKey: "paired_device_name") {
@@ -211,7 +194,7 @@ class PairingManager: ObservableObject {
             let currentBootTime = getCurrentBootTime()
             let savedBootTime = UserDefaults.standard.double(forKey: "last_boot_time")
             
-            if abs(currentBootTime - savedBootTime) > 120 {
+            // Re-validate session freshness
             if abs(currentBootTime - savedBootTime) > 120 {
                 unpair()
                 return
@@ -222,8 +205,6 @@ class PairingManager: ObservableObject {
             self.isPaired = true
             
             self.startMonitoringPairingStatus(pairingId: savedPairingId)
-            self.isSetupComplete = UserDefaults.standard.bool(forKey: "is_setup_complete")
-            
             self.isSetupComplete = UserDefaults.standard.bool(forKey: "is_setup_complete")
         }
     }
