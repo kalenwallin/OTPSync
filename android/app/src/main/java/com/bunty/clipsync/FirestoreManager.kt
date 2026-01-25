@@ -125,7 +125,7 @@ object FirestoreManager {
         // SAVE SECRET
         if (!secret.isNullOrEmpty()) {
             DeviceManager.saveEncryptionKey(context, secret)
-            Log.d("FirestoreManager", "Secure Key Swapped & Saved 🔐")
+            Log.d("FirestoreManager", "Secure Key Swapped & Saved ")
         }
 
         val pairingData = hashMapOf<String, Any>(

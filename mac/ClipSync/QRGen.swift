@@ -205,7 +205,7 @@ struct QRGenScreen: View {
         }
         .onChange(of: pairingManager.isPaired, initial: false) { oldValue, newValue in
             if newValue {
-                print("🎉 Pairing successful! Navigating to ConnectedScreen...")
+                print(" Pairing successful! Navigating to ConnectedScreen...")
                 navigateToConnected = true
             }
         }

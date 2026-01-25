@@ -132,7 +132,7 @@ fun ConnectionPage(
                             .align(Alignment.TopCenter)
                             .offset(y = 110.dp)
                     ) {
-                        // ✅ FIX: Shows dynamic device name instead of "Bunty's Mac"
+                        //  FIX: Shows dynamic device name instead of "Bunty's Mac"
                         Text(
                             text = "You are now paired with $pairedDeviceName",
                             fontFamily = robotoFontFamily,

@@ -245,7 +245,7 @@ class ClipboardManager: ObservableObject {
             }
             
             if Date().timeIntervalSince(self.lastListenerUpdate) > 60 {
-                print("⚠️ Watchdog: Listener stale. Restarting...")
+                print(" Watchdog: Listener stale. Restarting...")
                 self.listenForAndroidClipboard()
             }
         }

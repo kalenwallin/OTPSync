@@ -253,7 +253,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 // Check one more time to be safe?
                  if !NSApp.windows.contains(where: { $0.isVisible && $0.identifier?.rawValue == "mainWindow" }) {
                      NSApp.setActivationPolicy(.accessory)
-                     print("📱 Activation Policy changed to: ACCESSORY")
+                     print(" Activation Policy changed to: ACCESSORY")
                  }
             }
         }

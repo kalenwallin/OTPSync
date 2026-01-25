@@ -49,9 +49,9 @@ object DeviceManager {
         if (deviceId == null) {
             deviceId = "${Build.MODEL}_${UUID.randomUUID()}"
             getPrefs(context).edit().putString(KEY_ANDROID_DEVICE_ID, deviceId).apply()
-            println("📱 Generated new Device ID: $deviceId")
+            println(" Generated new Device ID: $deviceId")
         } else {
-            println("📱 Using existing Device ID: $deviceId")
+            println(" Using existing Device ID: $deviceId")
         }
         return deviceId
     }

@@ -1,12 +1,11 @@
 //
 // FirebaseManager.swift
-// ClipSync - TESTING MODE (No Authentication)
+// ClipSync - No Auth (E2E Encrypted)
 //
 
 import Foundation
 import FirebaseCore
 import FirebaseFirestore
-import FirebaseAuth
 
 class FirebaseManager {
     static let shared = FirebaseManager()
@@ -39,17 +38,14 @@ class FirebaseManager {
         db.settings = settings
         
         print(" Firebase initialized successfully")
+        print(" Security: E2E Encryption (No Auth Required)")
         print(" Offline persistence: DISABLED (MacOS Fix)")
         
         // Test network connectivity
         testNetworkConnection()
-        
-        // TEST MODE REMOVED: Now using strict authentication
-        print("✅ Firebase initialized. Waiting for Auth...")
     }
     
     // --- Connectivity Test ---
-    // Test if app has network access (Sandbox check)
     private func testNetworkConnection() {
         guard let url = URL(string: "https://www.google.com") else { return }
         
@@ -64,32 +60,13 @@ class FirebaseManager {
         task.resume()
     }
     
-    // --- Testing Helpers ---
-    // TESTING MODE: Skip auth completely
-    // Authenticate Anonymously
-    func waitForAuth(timeout: TimeInterval = 15.0, completion: @escaping (Bool) -> Void) {
-        if Auth.auth().currentUser != nil {
-            print("✅ Already authenticated (UID: \(Auth.auth().currentUser?.uid ?? ""))")
-            completion(true)
-            return
-        }
-
-        print("🔐 Authenticating anonymously...")
-        Auth.auth().signInAnonymously { result, error in
-            if let error = error {
-                print("❌ Authentication Failed: \(error.localizedDescription)")
-                completion(false)
-                return
-            }
-            
-            print("✅ Authenticated successfully (UID: \(result?.user.uid ?? ""))")
-            completion(true)
-        }
-    }
-    
     // Helper: Check if Firebase is ready
     var isReady: Bool {
         return FirebaseApp.app() != nil
+    }
+    
+    var isAuthenticated: Bool {
+        return true  // Always true since we don't use auth
     }
     
     // Helper: Get collection reference

@@ -2,34 +2,17 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <!-- Enable App Sandbox (REQUIRED for network entitlements to work) -->
     <key>com.apple.security.app-sandbox</key>
     <true/>
-    
-    <!-- Allow outgoing network connections (Firebase, Google APIs) -->
     <key>com.apple.security.network.client</key>
     <true/>
-    
-    <!-- Allow incoming network connections (for Firebase listeners) -->
     <key>com.apple.security.network.server</key>
     <true/>
-    
-    <!-- Allow clipboard access (Critical for your app!) -->
     <key>com.apple.security.device.clipboard</key>
     <true/>
-    
-    <!-- Allow user-selected file access (if needed for future features) -->
     <key>com.apple.security.files.user-selected.read-write</key>
     <true/>
-    
-    <!-- Disable library validation (allows Firebase SDK to load) -->
     <key>com.apple.security.cs.disable-library-validation</key>
     <true/>
-    
-    <!-- Allow keychain access (Firebase Auth needs this!) -->
-    <key>com.apple.security.application-groups</key>
-    <array>
-        <string>group.com.OP.ClipSync</string>
-    </array>
 </dict>
 </plist>

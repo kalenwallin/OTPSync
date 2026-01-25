@@ -124,7 +124,7 @@ fun PermissionPage(onFinishSetup: () -> Unit = {}) {
             }
 
             if (wasEnabled != accessibilityGranted && accessibilityGranted) {
-                Toast.makeText(context, "✓ Accessibility Enabled!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, " Accessibility Enabled!", Toast.LENGTH_SHORT).show()
             }
         }
     }

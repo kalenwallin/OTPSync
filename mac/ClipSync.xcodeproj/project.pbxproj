@@ -9,13 +9,9 @@
 /* Begin PBXBuildFile section */
 		BF18D1972EE3266F007C36EF /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = BF18D1962EE3266F007C36EF /* GoogleService-Info.plist */; };
 		BFF698172EFD43C60037416F /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF94DD432EF29B7F0034A1B9 /* Security.framework */; };
-		BFF6981D2EFD6C6B0037416F /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = BFF6981C2EFD6C6B0037416F /* FirebaseAuth */; };
 		BFF6981F2EFD6C6B0037416F /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = BFF6981E2EFD6C6B0037416F /* FirebaseCore */; };
 		BFF698212EFD6C6B0037416F /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = BFF698202EFD6C6B0037416F /* FirebaseDatabase */; };
 		BFF698232EFD6C6B0037416F /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = BFF698222EFD6C6B0037416F /* FirebaseFirestore */; };
-		BFF698252EFD6C6B0037416F /* FirebaseInAppMessaging-Beta in Frameworks */ = {isa = PBXBuildFile; productRef = BFF698242EFD6C6B0037416F /* FirebaseInAppMessaging-Beta */; };
-		BFF698272EFD6C6B0037416F /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = BFF698262EFD6C6B0037416F /* FirebaseMessaging */; };
-		BFF698292EFD6C6B0037416F /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = BFF698282EFD6C6B0037416F /* FirebaseStorage */; };
 		BFF6982C2EFD70300037416F /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = BFF6982B2EFD70300037416F /* Lottie */; };
 /* End PBXBuildFile section */
 
@@ -41,12 +37,8 @@
 				BFF698172EFD43C60037416F /* Security.framework in Frameworks */,
 				BFF6981F2EFD6C6B0037416F /* FirebaseCore in Frameworks */,
 				BFF6982C2EFD70300037416F /* Lottie in Frameworks */,
-				BFF698272EFD6C6B0037416F /* FirebaseMessaging in Frameworks */,
 				BFF698212EFD6C6B0037416F /* FirebaseDatabase in Frameworks */,
 				BFF698232EFD6C6B0037416F /* FirebaseFirestore in Frameworks */,
-				BFF698292EFD6C6B0037416F /* FirebaseStorage in Frameworks */,
-				BFF6981D2EFD6C6B0037416F /* FirebaseAuth in Frameworks */,
-				BFF698252EFD6C6B0037416F /* FirebaseInAppMessaging-Beta in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -99,13 +91,9 @@
 			);
 			name = ClipSync;
 			packageProductDependencies = (
-				BFF6981C2EFD6C6B0037416F /* FirebaseAuth */,
 				BFF6981E2EFD6C6B0037416F /* FirebaseCore */,
 				BFF698202EFD6C6B0037416F /* FirebaseDatabase */,
 				BFF698222EFD6C6B0037416F /* FirebaseFirestore */,
-				BFF698242EFD6C6B0037416F /* FirebaseInAppMessaging-Beta */,
-				BFF698262EFD6C6B0037416F /* FirebaseMessaging */,
-				BFF698282EFD6C6B0037416F /* FirebaseStorage */,
 				BFF6982B2EFD70300037416F /* Lottie */,
 			);
 			productName = ClipSync;
@@ -308,10 +296,13 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
-				ENABLE_APP_SANDBOX = NO;
-				ENABLE_HARDENED_RUNTIME = NO;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;
+				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -335,8 +326,6 @@
 				RUNTIME_EXCEPTION_DISABLE_EXECUTABLE_PAGE_PROTECTION = NO;
 				RUNTIME_EXCEPTION_DISABLE_LIBRARY_VALIDATION = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				STRIP_INSTALLED_PRODUCT = NO;
-				STRIP_STYLE = debugging;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -359,10 +348,13 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
-				ENABLE_APP_SANDBOX = NO;
-				ENABLE_HARDENED_RUNTIME = NO;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;
+				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -383,8 +375,6 @@
 				RUNTIME_EXCEPTION_DISABLE_EXECUTABLE_PAGE_PROTECTION = NO;
 				RUNTIME_EXCEPTION_DISABLE_LIBRARY_VALIDATION = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				STRIP_INSTALLED_PRODUCT = NO;
-				STRIP_STYLE = debugging;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -436,11 +426,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		BFF6981C2EFD6C6B0037416F /* FirebaseAuth */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = BFF6981B2EFD6C6B0037416F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseAuth;
-		};
 		BFF6981E2EFD6C6B0037416F /* FirebaseCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = BFF6981B2EFD6C6B0037416F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
@@ -455,21 +440,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = BFF6981B2EFD6C6B0037416F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
-		};
-		BFF698242EFD6C6B0037416F /* FirebaseInAppMessaging-Beta */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = BFF6981B2EFD6C6B0037416F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = "FirebaseInAppMessaging-Beta";
-		};
-		BFF698262EFD6C6B0037416F /* FirebaseMessaging */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = BFF6981B2EFD6C6B0037416F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseMessaging;
-		};
-		BFF698282EFD6C6B0037416F /* FirebaseStorage */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = BFF6981B2EFD6C6B0037416F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseStorage;
 		};
 		BFF6982B2EFD70300037416F /* Lottie */ = {
 			isa = XCSwiftPackageProductDependency;

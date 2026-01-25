@@ -31,17 +31,8 @@ class PairingManager: ObservableObject {
         
         DispatchQueue.main.async { self.pairingError = nil }
         
-        // Ensure Auth before listening
-        FirebaseManager.shared.waitForAuth(timeout: 20.0) { [weak self] success in
-            guard let self = self else { return }
-            if !success {
-                DispatchQueue.main.async {
-                    self.pairingError = "Connection failed. Check internet and restart app."
-                }
-                return
-            }
-            self.startFirestoreListener(macDeviceId: macDeviceId)
-        }
+        // No Auth required per user request
+        self.startFirestoreListener(macDeviceId: macDeviceId)
     }
     
     private func startFirestoreListener(macDeviceId: String) {

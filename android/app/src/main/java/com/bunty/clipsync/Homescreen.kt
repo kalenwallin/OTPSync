@@ -148,7 +148,7 @@ fun Homescreen(
     if (showUpdateDialog && updateInfo != null) {
         AlertDialog(
             onDismissRequest = { showUpdateDialog = false },
-            title = { Text(text = "Update Available 🚀") },
+            title = { Text(text = "Update Available ") },
             text = { 
                 Column {
                     Text("A new version (${updateInfo!!.version}) is available!")
@@ -416,7 +416,7 @@ fun Homescreen(
                             fontFamily = robotoFontFamily,
                             scale = scale
                         ) {
-                             FirestoreManager.sendClipboard(context, "Hello from ClipSync! 👋")
+                             FirestoreManager.sendClipboard(context, "Hello from ClipSync! ")
                              Toast.makeText(context, "Sent to Mac!", Toast.LENGTH_SHORT).show()
                         }
                         

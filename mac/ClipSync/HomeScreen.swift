@@ -313,7 +313,7 @@ struct HomeScreen: View {
         }
         .alert(isPresented: $updateChecker.updateAvailable) {
             Alert(
-                title: Text("Update Available 🚀"),
+                title: Text("Update Available "),
                 message: Text("A new version (\(updateChecker.latestVersion)) is available!"),
                 primaryButton: .default(Text("Download")) {
                     if let url = updateChecker.downloadURL {
@@ -340,14 +340,14 @@ struct HomeScreen: View {
                 isTestingEncryption = false
                 
                 if let decrypted = decrypted, decrypted == testString {
-                    encryptionTestResult = " Encryption working correctly"
+                    // Success! Just show animation, no text
                     showEncryptionSuccess = true
                     
                     DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                         showEncryptionSuccess = false
                     }
                 } else {
-                    encryptionTestResult = "❌ Encryption test failed"
+                    encryptionTestResult = " Encryption test failed"
                 }
             }
         }
@@ -363,7 +363,7 @@ struct HomeScreen: View {
             let sealedBox = try AES.GCM.seal(data, using: key)
             return sealedBox.combined?.base64EncodedString() ?? ""
         } catch {
-            print("❌ Encryption test failed: \(error)")
+            print(" Encryption test failed: \(error)")
             return ""
         }
     }
@@ -591,7 +591,7 @@ struct CheckEncryptionCard: View {
                          HStack {
                             Image(systemName: "xmark.square.fill")
                                 .foregroundColor(.red)
-                            Text(result.replacingOccurrences(of: "❌ ", with: ""))
+                            Text(result.replacingOccurrences(of: " ", with: ""))
                                 .font(.system(size: 12))
                                 .foregroundColor(.black.opacity(0.8))
                         }

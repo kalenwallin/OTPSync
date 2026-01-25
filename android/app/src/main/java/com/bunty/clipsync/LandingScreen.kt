@@ -99,10 +99,10 @@ fun LandingScreen(
             
             if (countryCode == "US" || euCountries.contains(countryCode)) {
                 DeviceManager.setTargetRegion(context, "US")
-                Log.d("LandingScreen", "🇺🇸 Auto-detected US/EU Region ($countryCode) -> Using US Server")
+                Log.d("LandingScreen", " Auto-detected US/EU Region ($countryCode) -> Using US Server")
             } else {
                 DeviceManager.setTargetRegion(context, "IN")
-                Log.d("LandingScreen", "📍 Auto-detected Region ($countryCode) -> Using IN Server")
+                Log.d("LandingScreen", " Auto-detected Region ($countryCode) -> Using IN Server")
             }
         }
 
