@@ -24,6 +24,9 @@
         android:theme="@style/Theme.ClipSync"
         tools:targetApi="31">
 
+        <!-- Disable Automatic Firebase Init so we can choose Region Manually -->
+
+
         <!-- MAIN ACTIVITY -->
         <activity
             android:name=".MainActivity"

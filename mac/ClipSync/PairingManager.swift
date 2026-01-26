@@ -26,17 +26,18 @@ class PairingManager: ObservableObject {
     func listenForPairing(macDeviceId: String) {
         guard !isPaired else { return }
         
-        // Time window: Only accept pairings created AFTER now
-        listenStartTime = Date().addingTimeInterval(-60)
+        // Time window: Relaxed to 1 hour to account for clock skew/restarts
+        listenStartTime = Date().addingTimeInterval(-3600)
         
         DispatchQueue.main.async { self.pairingError = nil }
+        
+        print("🎧 PairingManager: Start Check (MacID: \(macDeviceId))")
         
         // No Auth required per user request
         self.startFirestoreListener(macDeviceId: macDeviceId)
     }
     
     private func startFirestoreListener(macDeviceId: String) {
-
         
         // Query pairings collection where macId matches
         pairingListener = db.collection("pairings")
@@ -45,6 +46,7 @@ class PairingManager: ObservableObject {
                 guard let self = self else { return }
                 
                 if let error = error {
+                    print("❌ Pairing Listener Error: \(error.localizedDescription)")
                     let nsError = error as NSError
                     if nsError.code == 7 {
                         DispatchQueue.main.async {
@@ -58,7 +60,13 @@ class PairingManager: ObservableObject {
                     return
                 }
                 
-                guard let documents = snapshot?.documents else { return }
+                guard let documents = snapshot?.documents else { 
+                    print("⚠️ Pairing Snapshot is NIL")
+                    return 
+                }
+                
+                print("👀 Pairing Listener: Found \(documents.count) documents")
+                
                 if documents.isEmpty {
                     return
                 }
@@ -76,9 +84,11 @@ class PairingManager: ObservableObject {
         
         for doc in documents {
             let data = doc.data()
+            let docId = doc.documentID
             
             // Check if pairing has timestamp
             guard let timestamp = data["timestamp"] as? Timestamp else {
+                print("⚠️ Doc \(docId) missing timestamp. Skipping.")
                 continue
             }
             
@@ -87,8 +97,11 @@ class PairingManager: ObservableObject {
             // Only accept pairings created AFTER we started listening
             if let startTime = self.listenStartTime {
                 if pairingDate > startTime {
+                    print("✅ Valid Pairing Found! (Date: \(pairingDate))")
                     validPairing = doc
                     break
+                } else {
+                    print("⏳ Ignoring old pairing \(docId) (Date: \(pairingDate) vs Start: \(startTime))")
                 }
             }
         }

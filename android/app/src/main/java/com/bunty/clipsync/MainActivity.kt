@@ -114,18 +114,9 @@ fun ClipSyncNavigation(startDestination: String) {
                             val initializedRegion = DeviceManager.initializedRegion
 
                             if (qrRegion != initializedRegion) {
-                                Log.w("MainActivity", "Region mismatch. Restarting to switch region.")
+                                Log.i("MainActivity", "Region mismatch (QR: $qrRegion vs Init: $initializedRegion). Switching preference.")
                                 DeviceManager.setTargetRegion(context, qrRegion)
-                                
-                                // --- Auto-Restart for Region Switch ---
-                                android.os.Handler(android.os.Looper.getMainLooper()).post {
-                                    Toast.makeText(context, "Switching Server Region... App will restart.", Toast.LENGTH_LONG).show()
-                                    val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
-                                    intent?.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                                    context.startActivity(intent)
-                                    Runtime.getRuntime().exit(0)
-                                }
-                                return@QRScanScreen
+                                // No restart needed! FirestoreManager will pick up the new region dynamically.
                             }
 
                             Log.d("MainActivity", "Creating pairing with parsed data")

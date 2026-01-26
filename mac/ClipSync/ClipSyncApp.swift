@@ -21,25 +21,10 @@ struct ClipSyncApp: App {
             "syncFromMac": true
         ])
         
-        // --- Region Auto-Detection ---
-        // Determines Cloud Region (US vs IN) based on IP for optimal latency
-        LocationHelper.shared.detectRegion { country in
-            // European Countries (Better latency to US than IN)
-            let euCountries = ["ES", "FR", "DE", "IT", "UK", "GB", "NL", "BE", "SE", "NO", "DK", "FI", "IE", "PT", "GR", "AT", "CH", "PL", "CZ", "HU", "RO"]
-            
-            let region: String
-            if let country = country, (country == "US" || euCountries.contains(country)) {
-                region = RegionConfig.REGION_US
-            } else {
-                region = RegionConfig.REGION_INDIA
-            }
-            
-            // Persist region change
-            let current = UserDefaults.standard.string(forKey: "server_region")
-            if current != region {
-                UserDefaults.standard.set(region, forKey: "server_region")
-            }
-        }
+        // --- Region Auto-Detection (REMOVED) ---
+        // We now rely on Manual Selection in QRGenScreen for the initial setup.
+        // This prevents the app from overriding the user's choice with a potentially wrong auto-detect.
+
         
         // --- Firebase & Sync Initialization ---
         _ = FirebaseManager.shared

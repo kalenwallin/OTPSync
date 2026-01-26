@@ -7,7 +7,22 @@ import com.google.firebase.firestore.ListenerRegistration
 import org.json.JSONObject
 
 object FirestoreManager {
-    private val db = FirebaseFirestore.getInstance()
+    // Dynamic DB Access based on selected region
+    private fun getDb(context: Context): FirebaseFirestore {
+        val targetRegion = DeviceManager.getTargetRegion(context)
+        return if (targetRegion == RegionConfig.REGION_US) {
+            // Use the Named App for US
+            try {
+                FirebaseFirestore.getInstance(com.google.firebase.FirebaseApp.getInstance("ClipSyncUS"))
+            } catch (e: Exception) {
+                Log.e("FirestoreManager", "US App not initialized, falling back to default", e)
+                FirebaseFirestore.getInstance()
+            }
+        } else {
+            // Use Default App for India
+            FirebaseFirestore.getInstance()
+        }
+    }
 
     // Dynamic Secret Retrieval
     private fun getSharedSecret(context: Context): String {
@@ -142,7 +157,7 @@ object FirestoreManager {
 
         // Helper to actually create the NEW pairing
         fun createNewPairing() {
-            db.collection("pairings")
+            getDb(context).collection("pairings")
                 .add(pairingData)
                 .addOnSuccessListener { documentReference ->
                     val pairingId = documentReference.id
@@ -168,7 +183,7 @@ object FirestoreManager {
         val oldPairingId = DeviceManager.getPairingId(context)
         if (oldPairingId != null) {
             Log.d("FirestoreManager", "Found existing pairing ($oldPairingId). Deleting first...")
-            db.collection("pairings").document(oldPairingId).delete()
+            getDb(context).collection("pairings").document(oldPairingId).delete()
                 .addOnSuccessListener {
                     Log.d("FirestoreManager", "Old pairing deleted. Creating new one...")
                     createNewPairing()
@@ -194,7 +209,7 @@ object FirestoreManager {
         val pairingId = DeviceManager.getPairingId(context) ?: return null
         val currentDeviceId = DeviceManager.getDeviceId(context)
 
-        return db.collection("clipboardItems")
+        return getDb(context).collection("clipboardItems")
             .whereEqualTo("pairingId", pairingId)
             .orderBy("timestamp", com.google.firebase.firestore.Query.Direction.DESCENDING)
             .limit(1)
@@ -250,7 +265,7 @@ object FirestoreManager {
             "type" to "text"
         )
 
-        db.collection("clipboardItems")
+        getDb(context).collection("clipboardItems")
             .add(clipboardData)
             .addOnSuccessListener {
                 Log.d("FirestoreManager", "Clipboard sent successfully (Encrypted)")
@@ -270,7 +285,7 @@ object FirestoreManager {
     ) {
         val pairingId = DeviceManager.getPairingId(context) ?: return
 
-        db.collection("pairings")
+        getDb(context).collection("pairings")
             .document(pairingId)
             .delete()
             .addOnSuccessListener {
@@ -296,11 +311,11 @@ object FirestoreManager {
             return
         }
 
-        db.collection("clipboardItems")
+        getDb(context).collection("clipboardItems")
             .whereEqualTo("pairingId", pairingId)
             .get()
             .addOnSuccessListener { snapshot ->
-                val batch = db.batch()
+                val batch = getDb(context).batch()
                 for (doc in snapshot.documents) {
                     batch.delete(doc.reference)
                 }

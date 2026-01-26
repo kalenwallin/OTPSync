@@ -36,7 +36,9 @@ object DeviceManager {
         // Only saving if different to avoid redundant writes, 
         // but for initial setup we might want to force save.
         if (normalizedRegion != getTargetRegion(context)) {
-            getPrefs(context).edit().putString(KEY_REGION, normalizedRegion).apply()
+            // Must use commit() here because we might kill the process immediately after 
+            // for a region switch restart. apply() is async and might get cut off.
+            getPrefs(context).edit().putString(KEY_REGION, normalizedRegion).commit()
         }
     }
 
