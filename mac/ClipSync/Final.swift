@@ -48,8 +48,7 @@ struct FinalScreen: View {
             
             // Title
             Text("Almost there. Just Need a few\npermissions")
-                .font(.custom("SF Pro Display", size: 40))
-                .fontWeight(.bold)
+                .font(.system(size: 40, weight: .bold, design: .default))
                 .kerning(-1.2)
                 .lineSpacing(8)
                 .foregroundColor(.white)
@@ -67,8 +66,7 @@ struct FinalScreen: View {
             
             // Subtitle
             Text("To keep ClipSync working smoothly, allow these\npermissions")
-                .font(.custom("SF Pro", size: 24))
-                .fontWeight(.medium)
+                .font(.system(size: 24, weight: .medium, design: .default))
                 .kerning(-0.66)
                 .foregroundColor(Color(red: 0.125, green: 0.263, blue: 0.600))
                 .multilineTextAlignment(.center)
@@ -97,12 +95,11 @@ struct FinalScreen: View {
                 
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Accessibility")
-                        .font(.custom("SF Pro", size: 15))
-                        .fontWeight(.medium)
+                        .font(.system(size: 15, weight: .medium, design: .default))
                         .foregroundColor(.black)
                     
                     Text("Required so ClipSync can securely read and sync your copied text in the background.")
-                        .font(.custom("SF Pro Display", size: 12)) 
+                        .font(.system(size: 12)) 
                         .foregroundColor(Color(red: 0.314, green: 0.286, blue: 0.286))
                         .lineLimit(2)
                 }
@@ -155,12 +152,11 @@ struct FinalScreen: View {
                 
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Network Access")
-                        .font(.custom("SF Pro", size: 15))
-                        .fontWeight(.medium)
+                        .font(.system(size: 15, weight: .medium, design: .default))
                         .foregroundColor(.black)
                     
                     Text("Allows your Mac to stay linked with your phone for realtime sync.")
-                        .font(.custom("SF Pro Display", size: 12)) 
+                        .font(.system(size: 12)) 
                         .foregroundColor(Color(red: 0.314, green: 0.286, blue: 0.286))
                         .lineLimit(2)
                 }
@@ -204,12 +200,11 @@ struct FinalScreen: View {
                 
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Notifications")
-                        .font(.custom("SF Pro", size: 15))
-                        .fontWeight(.medium)
+                        .font(.system(size: 15, weight: .medium, design: .default))
                         .foregroundColor(.black)
                     
                     Text("So we can let you know if sync is paused, or when new updates and features arrive.")
-                        .font(.custom("SF Pro Display", size: 12)) 
+                        .font(.system(size: 12)) 
                         .foregroundColor(Color(red: 0.314, green: 0.286, blue: 0.286))
                         .lineLimit(2)
                 }
@@ -246,8 +241,7 @@ struct FinalScreen: View {
                 PairingManager.shared.completeSetup()
             }) {
                 Text("Finish Setup")
-                    .font(.custom("SF Pro", size: 17))
-                    .fontWeight(.semibold)
+                    .font(.system(size: 17, weight: .semibold, design: .default))
                     .foregroundColor(.black)
             }
             .frame(width: 132, height: 42)
