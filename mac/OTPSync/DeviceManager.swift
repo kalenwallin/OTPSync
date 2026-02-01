@@ -8,15 +8,15 @@ import IOKit
 
 class DeviceManager {
     static let shared = DeviceManager()
-    
+
     private let deviceIdKey = "mac_device_id"
-    
+
     init() {
         // Log device ID at startup for debugging
         let id = getDeviceId()
         print("🖥️ DeviceManager initialized with ID: \(id)")
     }
-    
+
     // --- Device Identity ---
     // Get or create unique Mac device ID (Randomly generated, not hardware serial)
     func getDeviceId() -> String {
@@ -24,20 +24,20 @@ class DeviceManager {
         if let existingId = UserDefaults.standard.string(forKey: deviceIdKey) {
             return existingId
         }
-        
+
         // Generate new random UUID
         let deviceId = UUID().uuidString
         UserDefaults.standard.set(deviceId, forKey: deviceIdKey)
         print("🆕 Generated new Mac device ID: \(deviceId)")
         return deviceId
     }
-    
+
     // --- Name Formatting ---
     // Get Mac computer name (for display in Android)
     func getMacName() -> String {
         return Host.current().localizedName ?? "Mac"
     }
-    
+
     // Get friendly name for UI (e.g. "Bhanu's Mac")
     func getFriendlyMacName() -> String {
         let fullName = getMacName()
@@ -53,4 +53,3 @@ class DeviceManager {
         return "My Mac"
     }
 }
-

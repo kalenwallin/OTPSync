@@ -16,8 +16,6 @@ struct MenuBarView: View {
 
     // View States
     @State private var showingRePairQR = false
-    @State private var isHoveringSettings = false
-    @State private var isHoveringQuit = false
     @State private var isAuthenticating = false  // Prevents double prompts
 
     #if DEBUG

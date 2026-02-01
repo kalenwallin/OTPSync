@@ -94,22 +94,6 @@ class QRCodeGenerator: ObservableObject {
         print(" QR Code generated successfully!")
     }
 
-    // Helper to convert Hex String to Data
-    private func startHexToData(hex: String) -> Data {
-        var data = Data()
-        var temp = ""
-        for char in hex {
-            temp.append(char)
-            if temp.count == 2 {
-                if let byte = UInt8(temp, radix: 16) {
-                    data.append(byte)
-                }
-                temp = ""
-            }
-        }
-        return data
-    }
-    // Fixed Helper naming conflict potentially - ensuring it's private
     private func generateRandomHexKey() -> String {
         var bytes = [UInt8](repeating: 0, count: 32)
         let status = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)

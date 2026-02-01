@@ -64,7 +64,6 @@ struct SplashScreen: View {
 // MARK: - Landing content (appears after mesh expansion)
 struct LandingScreenAnimatedContent: View {
     @State private var showTitle = false
-    @State private var showLogo = false
     @State private var showButton = false
     @State private var showFooter = false
 
@@ -156,9 +155,6 @@ struct LandingScreenAnimatedContent: View {
         .frame(width: 590, height: 590)
         .onAppear {
             withAnimation(.easeOut(duration: 0.5).delay(0.1)) { showTitle = true }
-            withAnimation(.spring(response: 0.6, dampingFraction: 0.75).delay(0.25)) {
-                showLogo = true
-            }
             withAnimation(.spring(response: 0.55, dampingFraction: 0.8).delay(0.4)) {
                 showButton = true
             }

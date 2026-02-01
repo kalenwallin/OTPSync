@@ -38,7 +38,7 @@ class ClipboardManager: ObservableObject {
     private var watchdogTimer: Timer?  // Fix for infinite timer loop
     private var lastChangeCount = 0
     private var lastCopiedText: String = ""
-    private var ignoreChangeCount = 0  // Number of clipboard changes to ignore (clearContents + setString = 2)
+    private var contentToIgnore: String? = nil  // Content we just received from Android - ignore if it matches
 
     // Convex subscription
     private var clipboardSubscription: AnyCancellable?
@@ -118,19 +118,27 @@ class ClipboardManager: ObservableObject {
     }
 
     private func processClipboardChange() {
-        if ignoreChangeCount > 0 {
-            ignoreChangeCount -= 1
-            return
-        }
-
         guard let text = pasteboard.string(forType: .string), !text.isEmpty else {
+            print("⚠️ No text in clipboard or empty")
             return
         }
 
-        guard text != lastCopiedText else { return }
+        // Check if this is content we just received from Android (should ignore)
+        if let ignoreContent = contentToIgnore, text == ignoreContent {
+            print("⏭️ Ignoring clipboard change from Android sync")
+            contentToIgnore = nil  // Clear after first match
+            return
+        }
+
+        guard text != lastCopiedText else {
+            print("⏭️ Duplicate text, skipping (already: \(lastCopiedText.prefix(30))...)")
+            return
+        }
+        print("📋 New clipboard text detected: \(text.prefix(50))...")
         lastCopiedText = text
 
         guard syncFromMac else {
+            print("⏭️ syncFromMac is disabled")
             return
         }
 
@@ -156,7 +164,7 @@ class ClipboardManager: ObservableObject {
     private func uploadClipboard(text: String) {
         guard let pairingId = PairingManager.shared.pairingId else { return }
         let macDeviceId = DeviceManager.shared.getDeviceId()
-        
+
         print("📤 Uploading clipboard with sourceDeviceId: \(macDeviceId)")
 
         guard let encryptedContent = encrypt(text) else { return }
@@ -229,9 +237,9 @@ class ClipboardManager: ObservableObject {
 
                 // Ignore own updates
                 print("📥 Received item from: \(item.sourceDeviceId), Mac ID: \(macDeviceId)")
-                guard item.sourceDeviceId != macDeviceId else { 
+                guard item.sourceDeviceId != macDeviceId else {
                     print("⏭️ Ignoring own update")
-                    return 
+                    return
                 }
 
                 self.lastReceivedItemId = item.documentId
@@ -242,12 +250,11 @@ class ClipboardManager: ObservableObject {
                 // Duplicate Check
                 guard content != self.lastCopiedText else { return }
 
-                // Set lastCopiedText BEFORE writing to pasteboard to prevent race condition
-                // where processClipboardChange() runs before we update lastCopiedText
+                // Set contentToIgnore BEFORE writing to pasteboard so processClipboardChange
+                // knows to skip this content (handles race conditions)
+                self.contentToIgnore = content
                 self.lastCopiedText = content
 
-                // Ignore next 2 changes: clearContents() and setString() each trigger a change
-                self.ignoreChangeCount = 2
                 self.pasteboard.clearContents()
                 self.pasteboard.setString(content, forType: .string)
 

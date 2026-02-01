@@ -1,6 +1,5 @@
 import AppKit
 import Combine
-import IOKit.pwr_mgt
 //
 // OTPSyncApp.swift
 // OTPSync
@@ -160,7 +159,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var statusItem: NSStatusItem?
     var popover: NSPopover?
     var cancellables = Set<AnyCancellable>()
-    var assertionID: IOPMAssertionID = 0
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Hide from Dock (Menu Bar App Mode)
@@ -260,30 +258,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    func preventAppSleep() {
-        let reason = "OTPSync needs to monitor clipboard" as CFString
-        let success = IOPMAssertionCreateWithName(
-            kIOPMAssertionTypePreventUserIdleSystemSleep as CFString,
-            IOPMAssertionLevel(kIOPMAssertionLevelOn),
-            reason,
-            &assertionID
-        )
-
-        if success == kIOReturnSuccess {
-            // Sleep prevention successful
-        } else {
-            // Failed to prevent sleep
-        }
-    }
-
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         return false
     }
 
     deinit {
         NotificationCenter.default.removeObserver(self)
-        if assertionID != 0 {
-            IOPMAssertionRelease(assertionID)
-        }
     }
 }

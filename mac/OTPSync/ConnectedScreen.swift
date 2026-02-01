@@ -3,7 +3,6 @@ import Lottie
 import SwiftUI
 
 struct ConnectedScreen: View {
-    @StateObject private var pairingManagerr = PairingManager.shared
     @State private var navigateToFinal = false
 
     // --- Animation States ---
