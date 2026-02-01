@@ -1,3 +1,9 @@
+## Android Changes
+
+- After updating the Android app, run './dandroid/debug.sh run` to test the new build.
+
+## Convex Changes
+
 - use `pnpm` instead of `npm` or `yarn` for package management.
 - install dependencies with `pnpm install`.
 - run the project with `pnpm dlx convex dev` to check that everything is working correctly.

@@ -104,18 +104,26 @@ A debug script is provided for streamlined development:
 
 ```bash
 cd android
+./debug.sh [command]
+```
 
-# Build, install, and run with live logs
-./debug.sh run
+| Command | Description |
+|---------|-------------|
+| `build` | Build and install debug APK |
+| `run` | Build, install, launch, and show logs |
+| `logs` | Show live app logs (filtered) |
+| `logcat` | Show full system logcat |
+| `crash` | Show recent crash logs |
+| `wireless` | Set up wireless debugging |
+| `devices` | List connected devices |
+| `clear` | Clear app data |
+| `uninstall` | Uninstall the app |
 
-# Just view logs from running app
-./debug.sh logs
-
-# Enable wireless debugging (after USB setup)
-./debug.sh wireless
-
-# View all available commands
-./debug.sh
+**Examples:**
+```bash
+./debug.sh run       # Full development cycle
+./debug.sh logs      # Just watch logs
+./debug.sh wireless  # Enable wireless debugging
 ```
 
 **Setting up USB Debugging:**
