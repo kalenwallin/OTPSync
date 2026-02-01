@@ -98,6 +98,12 @@ class ClipboardAccessibilityService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event == null) return
 
+        // Skip processing if we just wrote to clipboard ourselves (from Mac sync)
+        // This prevents detecting our own clipboard writes as new copy events
+        if (ignoreNextChange) {
+            return
+        }
+
         try {
             val eventTime = event.eventTime
             // Debounce: Ignore events if they happen too close to the last one (1 second)

@@ -133,7 +133,8 @@ class ClipboardGhostActivity : Activity() {
             val clip = ClipData.newPlainText("Copied Text", text)
             clipboard.setPrimaryClip(clip)
             Log.d("ClipboardGhost", "Successfully set clipboard via Ghost Activity")
-            Toast.makeText(this, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+            // Note: Toast removed to avoid duplicate notifications
+            // The accessibility service already shows "Synced from Mac" toast
         } catch (e: Exception) {
             Log.e("ClipboardGhost", "Failed to set clipboard", e)
         }

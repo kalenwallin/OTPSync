@@ -245,7 +245,7 @@ class ClipboardManager: ObservableObject {
                 self.history.insert(newItem, at: 0)
                 self.lastSyncedTime = Date()
                 self.incrementSyncCount()
-                
+
                 // Send macOS notification
                 NotificationManager.shared.sendClipboardSyncNotification(
                     content: content,
