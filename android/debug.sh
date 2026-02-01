@@ -1,11 +1,11 @@
 #!/bin/bash
-# ClipSync Android Debug Script
+# OTPSync Android Debug Script
 # Usage: ./debug.sh [command]
 #
 # Commands:
 #   build     - Build and install debug APK
 #   run       - Build, install, and launch the app
-#   logs      - Show live app logs (filtered to ClipSync)
+#   logs      - Show live app logs (filtered to OTPSync)
 #   logcat    - Show full logcat with all logs
 #   wireless  - Set up wireless debugging
 #   devices   - List connected devices
@@ -15,7 +15,7 @@
 
 set -e
 
-APP_PACKAGE="com.kalenwallin.clipsync.dev"
+APP_PACKAGE="com.kalenwallin.otpsync.dev"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Colors for output
@@ -96,20 +96,20 @@ case "${1:-help}" in
         adb_cmd install -r app/build/outputs/apk/debug/app-debug.apk
         log_success "Installed!"
         
-        log_info "Launching ClipSync..."
-        adb_cmd shell am start -n "$APP_PACKAGE/com.kalenwallin.clipsync.MainActivity"
+        log_info "Launching OTPSync..."
+        adb_cmd shell am start -n "$APP_PACKAGE/com.kalenwallin.otpsync.MainActivity"
         log_success "App launched!"
         
         echo ""
         log_info "Showing logs (Ctrl+C to stop)..."
         echo "─────────────────────────────────────────────"
         adb_cmd logcat --pid=$(adb_cmd shell pidof -s $APP_PACKAGE) 2>/dev/null || \
-            adb_cmd logcat | grep -E "(ClipSync|$APP_PACKAGE|AndroidRuntime|System.err)"
+            adb_cmd logcat | grep -E "(OTPSync|$APP_PACKAGE|AndroidRuntime|System.err)"
         ;;
         
     logs)
         check_device
-        log_info "Showing ClipSync logs (Ctrl+C to stop)..."
+        log_info "Showing OTPSync logs (Ctrl+C to stop)..."
         echo "─────────────────────────────────────────────"
         # Try to get PID-filtered logs first, fall back to grep
         PID=$(adb_cmd shell pidof -s $APP_PACKAGE 2>/dev/null)
@@ -117,7 +117,7 @@ case "${1:-help}" in
             adb_cmd logcat --pid=$PID
         else
             log_warn "App not running. Showing filtered logcat..."
-            adb_cmd logcat | grep -E "(ClipSync|$APP_PACKAGE|AndroidRuntime|System.err)"
+            adb_cmd logcat | grep -E "(OTPSync|$APP_PACKAGE|AndroidRuntime|System.err)"
         fi
         ;;
         
@@ -178,13 +178,13 @@ case "${1:-help}" in
         
     uninstall)
         check_device
-        log_info "Uninstalling ClipSync..."
+        log_info "Uninstalling OTPSync..."
         adb_cmd uninstall $APP_PACKAGE
         log_success "Uninstalled!"
         ;;
         
     *)
-        echo "ClipSync Android Debug Script"
+        echo "OTPSync Android Debug Script"
         echo ""
         echo "Usage: ./debug.sh [command]"
         echo ""

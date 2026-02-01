@@ -1,4 +1,4 @@
-package com.kalenwallin.clipsync
+package com.kalenwallin.otpsync
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -207,7 +207,7 @@ fun QRScanScreen(
                             Spacer(modifier = Modifier.weight(1f))
 
                             Text(
-                                text = "Open ClipSync on your Mac and scan the QR code to connect instantly.",
+                                text = "Open OTPSync on your Mac and scan the QR code to connect instantly.",
                                 fontFamily = robotoFontFamily,
                                 fontWeight = FontWeight.Medium,
                                 fontSize = subtitleFontSize,

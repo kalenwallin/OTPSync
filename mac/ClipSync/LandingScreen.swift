@@ -29,7 +29,7 @@ struct LandingScreen: View {
                     ZStack {
                         // Title Section
                         VStack(spacing: 8) {
-                            Text("ClipSync")
+                            Text("OTPSync")
                                 .font(.system(size: 64, weight: .bold, design: .default))
                                 .kerning(-3)
                                 .foregroundColor(.white)

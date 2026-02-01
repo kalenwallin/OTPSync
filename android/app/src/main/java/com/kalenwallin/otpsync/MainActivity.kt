@@ -1,4 +1,4 @@
-package com.kalenwallin.clipsync
+package com.kalenwallin.otpsync
 
 
 import android.os.Bundle
@@ -42,14 +42,14 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MaterialTheme {
-                ClipSyncNavigation(startDestination = startDestination)
+                OTPSyncNavigation(startDestination = startDestination)
             }
         }
     }
 }
 
 @Composable
-fun ClipSyncNavigation(startDestination: String) {
+fun OTPSyncNavigation(startDestination: String) {
     val navController = rememberNavController()
 
     // Persistent Animation States

@@ -1,8 +1,8 @@
 ![Clipsync logo](mac/ClipSync/Assets.xcassets/AppIcon.appiconset/Readme-logo.png)
 
-# ClipSync: Seamless Universal Clipboard
+# OTPSync: Seamless Universal Clipboard
 
-**ClipSync** is the ultimate tool to synchronize your clipboard across Android and Mac—**instantly** and **securely**. Copy on your Mac, paste on your Android. It's that simple.
+**OTPSync** is the ultimate tool to synchronize your clipboard across Android and Mac—**instantly** and **securely**. Copy on your Mac, paste on your Android. It's that simple.
 
 > **Open Source, Secure, and Blazing Fast.**
 
@@ -60,15 +60,15 @@ Google Play Protect may block the installation since the app isn't from the Play
 4. Turn **OFF** "Scan apps with Play Protect".
 
 ##### 2. Enable Accessibility Permission (Critical Step)
-ClipSync uses an Accessibility Service to detect copy events. On **Android 13+**, this setting is "Restricted" for sideloaded apps by default. Here is how to unlock it:
+OTPSync uses an Accessibility Service to detect copy events. On **Android 13+**, this setting is "Restricted" for sideloaded apps by default. Here is how to unlock it:
 
-1. Open **ClipSync** and tap the **Accessibility** toggle.
+1. Open **OTPSync** and tap the **Accessibility** toggle.
 2. If it is grayed out or shows a "Restricted Setting" popup, click **OK**.
-3. Go to your phone's **Settings** → **Apps** → **ClipSync**.
+3. Go to your phone's **Settings** → **Apps** → **OTPSync**.
 4. Tap the **Three Dots (⋮)** in the top-right corner.
 5. Select **Allow restricted settings**. (You may need to verify your fingerprint/PIN).
-6. **Go Back** to the ClipSync app and tap the toggle again.
-7. Find **ClipSync** under "Downloaded Apps" and turn it **ON**.
+6. **Go Back** to the OTPSync app and tap the toggle again.
+7. Find **OTPSync** under "Downloaded Apps" and turn it **ON**.
 
 ---
 

@@ -1,4 +1,4 @@
-package com.kalenwallin.clipsync
+package com.kalenwallin.otpsync
 
 import android.content.Context
 import android.content.Intent
@@ -60,7 +60,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.kalenwallin.clipsync.R
+import com.kalenwallin.otpsync.R
 
 @Composable
 fun Homescreen(
@@ -355,7 +355,7 @@ fun Homescreen(
                                         if (!isAccessibilityEnabled) {
                                             val intent = android.content.Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS)
                                             context.startActivity(intent)
-                                            Toast.makeText(context, "Enable ClipSync Service", Toast.LENGTH_LONG).show()
+                                            Toast.makeText(context, "Enable OTPSync Service", Toast.LENGTH_LONG).show()
                                         }
                                     }
                                 )
@@ -432,7 +432,7 @@ fun Homescreen(
                         ) {
                              scope.launch {
                                  try {
-                                     ConvexManager.sendClipboard(context, "Hello from ClipSync! ")
+                                     ConvexManager.sendClipboard(context, "Hello from OTPSync! ")
                                      withContext(Dispatchers.Main) {
                                          Toast.makeText(context, "Sent to Mac!", Toast.LENGTH_SHORT).show()
                                      }
@@ -484,7 +484,7 @@ fun Homescreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "ClipSync v1.0.0",
+                    text = "OTPSync v1.0.0",
                     fontFamily = robotoFontFamily,
                     fontSize = (12 * scale).coerceIn(10f, 12f).sp,
                     color = Color(0xFF3C3C43).copy(alpha = 0.4f)

@@ -1,7 +1,7 @@
 {
-  "name": "clipsync-backend",
+  "name": "otpsync-backend",
   "version": "1.0.0",
-  "description": "ClipSync Convex Backend",
+  "description": "OTPSync Convex Backend",
   "private": true,
   "scripts": {
     "dev": "convex dev",

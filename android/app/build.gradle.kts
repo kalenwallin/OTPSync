@@ -18,11 +18,11 @@ val convexUrl = if (envFile.exists()) {
 }
 
 android {
-    namespace = "com.kalenwallin.clipsync"
+    namespace = "com.kalenwallin.otpsync"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.kalenwallin.clipsync.dev"
+        applicationId = "com.kalenwallin.otpsync.dev"
         minSdk = 31
         targetSdk = 36
         versionCode = 1

@@ -1,4 +1,4 @@
-package com.kalenwallin.clipsync
+package com.kalenwallin.otpsync
 
 import android.Manifest
 import android.util.Log

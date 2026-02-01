@@ -27,5 +27,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "ClipSync"
+rootProject.name = "OTPSync"
 include(":app")

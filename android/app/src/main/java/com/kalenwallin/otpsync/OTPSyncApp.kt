@@ -1,21 +1,21 @@
-package com.kalenwallin.clipsync
+package com.kalenwallin.otpsync
 
 import android.app.Application
 import android.util.Log
 
-class ClipSyncApp : Application() {
+class OTPSyncApp : Application() {
     override fun onCreate() {
         super.onCreate()
 
         // Initialize Convex Manager
         try {
             ConvexManager.initialize(this)
-            Log.d("ClipSync", "Convex Manager Initialized")
+            Log.d("OTPSync", "Convex Manager Initialized")
         } catch (e: Exception) {
-            Log.e("ClipSync", "Failed to initialize Convex: ${e.message}")
+            Log.e("OTPSync", "Failed to initialize Convex: ${e.message}")
         }
         
         val deviceId = DeviceManager.getDeviceId(this)
-        Log.d("ClipSync", "Device ID: $deviceId")
+        Log.d("OTPSync", "Device ID: $deviceId")
     }
 }

@@ -1,4 +1,4 @@
-package com.kalenwallin.clipsync
+package com.kalenwallin.otpsync
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
@@ -212,7 +212,7 @@ fun PermissionPage(onFinishSetup: () -> Unit = {}) {
                             if (!accessibilityGranted) {
                                 val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
                                 context.startActivity(intent)
-                                Toast.makeText(context, "Enable ClipSync in Accessibility", Toast.LENGTH_LONG).show()
+                                Toast.makeText(context, "Enable OTPSync in Accessibility", Toast.LENGTH_LONG).show()
                             }
                         },
                         fontFamily = robotoFontFamily,
@@ -398,10 +398,10 @@ fun isAccessibilityServiceEnabled(context: android.content.Context): Boolean {
 
         // Check if ANY of these patterns match
         val possibleNames = listOf(
-            "com.kalenwallin.clipsync/com.kalenwallin.clipsync.ClipboardAccessibilityService",
-            "com.kalenwallin.clipsync/.ClipboardAccessibilityService",
+            "com.kalenwallin.otpsync/com.kalenwallin.otpsync.ClipboardAccessibilityService",
+            "com.kalenwallin.otpsync/.ClipboardAccessibilityService",
             "ClipboardAccessibilityService",
-            "ClipSync" // Some ROMs just show the label
+            "OTPSync" // Some ROMs just show the label
         )
 
         for (name in possibleNames) {
