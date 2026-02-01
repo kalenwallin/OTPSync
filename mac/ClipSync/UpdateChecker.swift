@@ -1,5 +1,5 @@
-import Foundation
 import Combine
+import Foundation
 
 struct GitHubRelease: Decodable {
     let tag_name: String
@@ -9,7 +9,7 @@ struct GitHubRelease: Decodable {
 
 class UpdateChecker: ObservableObject {
     static let shared = UpdateChecker()
-    
+
     @Published var updateAvailable: Bool = false
     @Published var latestVersion: String = ""
     @Published var downloadURL: URL?
@@ -18,7 +18,7 @@ class UpdateChecker: ObservableObject {
     // --- GitHub API Config ---
     private let repoOwner = "WinShell-Bhanu"
     private let repoName = "Clipsync"
-    private let currentVersion = "1.0.0" 
+    private let currentVersion = "1.0.0"
 
     // --- Update Check Logic ---
     func checkForUpdates() {
@@ -39,16 +39,17 @@ class UpdateChecker: ObservableObject {
             do {
                 // Decode ARRAY of releases, take the first one
                 let releases = try JSONDecoder().decode([GitHubRelease].self, from: data)
-                
+
                 if let latestRelease = releases.first {
                     DispatchQueue.main.async {
-                        self?.compareVersions(latestTag: latestRelease.tag_name, release: latestRelease)
+                        self?.compareVersions(
+                            latestTag: latestRelease.tag_name, release: latestRelease)
                     }
                 }
             } catch {
                 print("Failed to parse release data: \(error)")
                 if let str = String(data: data, encoding: .utf8) {
-                     print("Raw Response: \(str)")
+                    print("Raw Response: \(str)")
                 }
             }
         }.resume()
@@ -57,9 +58,10 @@ class UpdateChecker: ObservableObject {
     // --- Version Comparison ---
     private func compareVersions(latestTag: String, release: GitHubRelease) {
         let cleanLatest = latestTag.replacingOccurrences(of: "v", with: "")
-        
+
         // Get actual app version or use fallback
-        let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? currentVersion
+        let appVersion =
+            Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? currentVersion
         let cleanCurrent = appVersion.replacingOccurrences(of: "v", with: "")
 
         if isVersionNewer(current: cleanCurrent, latest: cleanLatest) {
@@ -76,13 +78,13 @@ class UpdateChecker: ObservableObject {
     private func isVersionNewer(current: String, latest: String) -> Bool {
         let currentParts = current.split(separator: ".").compactMap { Int($0) }
         let latestParts = latest.split(separator: ".").compactMap { Int($0) }
-        
+
         let length = max(currentParts.count, latestParts.count)
-        
+
         for i in 0..<length {
             let c = i < currentParts.count ? currentParts[i] : 0
             let l = i < latestParts.count ? latestParts[i] : 0
-            
+
             if l > c { return true }
             if l < c { return false }
         }

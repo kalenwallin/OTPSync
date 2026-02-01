@@ -209,7 +209,7 @@ fun SubtitleSection() {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
     val heightScale = screenHeight.value / 915f
-    val subtitleFontSize = (28 * heightScale).coerceIn(18f, 28f).sp
+    val badgeFontSize = (14 * heightScale).coerceIn(10f, 14f).sp
     val topPadding = (199 * heightScale).dp
 
     Box(
@@ -218,27 +218,32 @@ fun SubtitleSection() {
             .padding(top = topPadding),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = "ReImagined the Apple Way",
-            fontSize = subtitleFontSize,
-            fontWeight = FontWeight.Medium,
-            letterSpacing = (-0.03f * 28).sp,
-            fontFamily = FontFamily(Font(R.font.roboto_medium)),
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-            textAlign = TextAlign.Center,
-            style = TextStyle(
-                brush = Brush.linearGradient(
-                    colors = listOf(
-                        Color(0xFF4A889D),
-                        Color(0xFF500CFF)
+        // Gradient Convex badge
+        Box(
+            modifier = Modifier
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFF9B5ABE), // Purple
+                            Color(0xFF5E99EC)  // Blue
+                        ),
+                        start = Offset.Zero,
+                        end = Offset.Infinite
                     ),
-                    start = Offset.Zero,
-                    end = Offset.Infinite
+                    shape = RoundedCornerShape(50)
                 )
-            ),
-            maxLines = 1,
-            overflow = TextOverflow.Visible
-        )
+                .padding(horizontal = 12.dp, vertical = 6.dp)
+        ) {
+            Text(
+                text = "Convex",
+                fontSize = badgeFontSize,
+                fontWeight = FontWeight.Medium,
+                fontFamily = FontFamily(Font(R.font.roboto_medium)),
+                color = Color.White,
+                textAlign = TextAlign.Center,
+                maxLines = 1
+            )
+        }
     }
 }
 
