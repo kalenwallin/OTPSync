@@ -19,3 +19,5 @@ Run `bd prime` for workflow context.
 - `bd create "Title" --type task --priority 2` - Create issue
 - `bd close <id>` - Complete work
 - `bd sync` - Sync with git (run at session end)
+
+Example of a bead issue id: 'Clipsync-3tw'. If the message contains a bead id, reference the issue details and begin working.
