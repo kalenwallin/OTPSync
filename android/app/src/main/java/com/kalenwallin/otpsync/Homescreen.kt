@@ -372,21 +372,24 @@ fun Homescreen(
                                     fontFamily = robotoFontFamily,
                                     scale = scale,
                                     subtitle = "Accessibility",
-                                    onClick = {
-                                        if (!isAccessibilityEnabled) {
-                                            // Try to open the specific accessibility service settings for this app
-                                            val componentName = android.content.ComponentName(
-                                                context.packageName,
-                                                ClipboardAccessibilityService::class.java.name
-                                            )
-                                            val intent = android.content.Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
-                                                val bundle = android.os.Bundle()
-                                                bundle.putString(":settings:fragment_args_key", componentName.flattenToString())
-                                                putExtra(":settings:fragment_args_key", componentName.flattenToString())
-                                                putExtra(":settings:show_fragment_args", bundle)
-                                            }
-                                            context.startActivity(intent)
+                                    showToggle = true,
+                                    onToggle = { enabled ->
+                                        // Open accessibility settings to toggle the service
+                                        val componentName = android.content.ComponentName(
+                                            context.packageName,
+                                            ClipboardAccessibilityService::class.java.name
+                                        )
+                                        val intent = android.content.Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+                                            val bundle = android.os.Bundle()
+                                            bundle.putString(":settings:fragment_args_key", componentName.flattenToString())
+                                            putExtra(":settings:fragment_args_key", componentName.flattenToString())
+                                            putExtra(":settings:show_fragment_args", bundle)
+                                        }
+                                        context.startActivity(intent)
+                                        if (enabled) {
                                             Toast.makeText(context, "Find OTP Sync under 'Installed apps' and enable it", Toast.LENGTH_LONG).show()
+                                        } else {
+                                            Toast.makeText(context, "Find OTP Sync under 'Installed apps' and disable it", Toast.LENGTH_LONG).show()
                                         }
                                     }
                                 )
@@ -412,16 +415,23 @@ fun Homescreen(
                                     fontFamily = robotoFontFamily,
                                     scale = scale,
                                     subtitle = "Battery Optimization",
-                                    onClick = {
-                                        if (!isBatteryUnrestricted) {
-                                            try {
+                                    showToggle = true,
+                                    onToggle = { enabled ->
+                                        try {
+                                            if (enabled) {
+                                                // Request to ignore battery optimizations
                                                 val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
                                                     data = Uri.parse("package:${context.packageName}")
                                                 }
                                                 context.startActivity(intent)
-                                            } catch (e: Exception) {
-                                                Toast.makeText(context, "Could not open Battery Settings", Toast.LENGTH_SHORT).show()
+                                            } else {
+                                                // Open battery settings to re-enable optimization (disable unrestricted)
+                                                val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                                                context.startActivity(intent)
+                                                Toast.makeText(context, "Find OTP Sync and remove from 'Unrestricted' list", Toast.LENGTH_LONG).show()
                                             }
+                                        } catch (e: Exception) {
+                                            Toast.makeText(context, "Could not open Battery Settings", Toast.LENGTH_SHORT).show()
                                         }
                                     }
                                 )
@@ -663,6 +673,8 @@ fun StatusRow(
     fontFamily: FontFamily,
     scale: Float = 1f,
     subtitle: String? = null,
+    showToggle: Boolean = false,
+    onToggle: ((Boolean) -> Unit)? = null,
     onClick: () -> Unit = {}
 ) {
     Row(
@@ -670,7 +682,8 @@ fun StatusRow(
             .fillMaxWidth()
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = null
+                indication = null,
+                enabled = !showToggle // Only clickable if not showing toggle
             ) { onClick() }
             .padding(vertical = (12 * scale).dp),
         verticalAlignment = Alignment.CenterVertically
@@ -709,7 +722,21 @@ fun StatusRow(
             }
         }
         
-        if (isActive) {
+        if (showToggle && onToggle != null) {
+            // Toggle switch for controlling the permission
+            Switch(
+                checked = isActive,
+                onCheckedChange = onToggle,
+                modifier = Modifier.scale(scale),
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = Color.White,
+                    checkedTrackColor = Color(0xFF34C759), // iOS Green
+                    uncheckedThumbColor = Color.White,
+                    uncheckedTrackColor = Color(0xFFE9E9EA),
+                    uncheckedBorderColor = Color.Transparent
+                )
+            )
+        } else if (isActive) {
             Text(
                 text = "Active",
                 color = Color(0xFF34C759),
