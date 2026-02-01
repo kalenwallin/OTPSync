@@ -68,12 +68,13 @@ struct QRGenScreen: View {
                         HStack(alignment: .center, spacing: 14) {
                             NumberCircleView(number: "1")
 
-                            Text("Open OTPSync app on your\nAndroid Phone")
-                                .font(.system(size: 19, weight: .medium, design: .default))
-                                .lineSpacing(2)
-                                .multilineTextAlignment(.center)
+                            Text("Open ClipSync app on your\nAndroid Phone")
+                                .font(.system(size: 18, weight: .medium, design: .default))
+                                .lineSpacing(3)
+                                .multilineTextAlignment(.leading)
                                 .foregroundColor(Color(red: 0.125, green: 0.263, blue: 0.600))
-                                .frame(maxWidth: .infinity)
+
+                            Spacer(minLength: 0)
                         }
                         .padding(.horizontal, 16)
                     }

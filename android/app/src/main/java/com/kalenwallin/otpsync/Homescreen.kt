@@ -365,7 +365,7 @@ fun Homescreen(
                                                 putExtra(":settings:show_fragment_args", bundle)
                                             }
                                             context.startActivity(intent)
-                                            Toast.makeText(context, "Find ClipSync under 'Installed apps' and enable it", Toast.LENGTH_LONG).show()
+                                            Toast.makeText(context, "Find OTPSync under 'Installed apps' and enable it", Toast.LENGTH_LONG).show()
                                         }
                                     }
                                 )

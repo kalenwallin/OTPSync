@@ -11,6 +11,8 @@ import android.provider.Settings
 import android.content.pm.PackageManager
 import android.os.Build
 import android.Manifest
+import android.os.PowerManager
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -62,6 +64,7 @@ fun PermissionPage(onFinishSetup: () -> Unit = {}) {
 
     var accessibilityGranted by remember { mutableStateOf(false) }
     var overlayGranted by remember { mutableStateOf(false) }
+    var batteryUnrestricted by remember { mutableStateOf(false) }
 
     // --- Animation Sequence (Staggered Entrance) ---
     var showHeader by remember { mutableStateOf(false) }
@@ -69,6 +72,7 @@ fun PermissionPage(onFinishSetup: () -> Unit = {}) {
     var showItem1 by remember { mutableStateOf(false) }
     var showItem2 by remember { mutableStateOf(false) }
     var showItem3 by remember { mutableStateOf(false) }
+    var showItem4 by remember { mutableStateOf(false) }
     var showButton by remember { mutableStateOf(false) }
 
     // Trigger Animations Sequence
@@ -83,6 +87,8 @@ fun PermissionPage(onFinishSetup: () -> Unit = {}) {
         showItem2 = true
         delay(100)
         showItem3 = true
+        delay(100)
+        showItem4 = true
         delay(150)
         showButton = true
     }
@@ -108,11 +114,14 @@ fun PermissionPage(onFinishSetup: () -> Unit = {}) {
     // Check on first load & Periodic check
     LaunchedEffect(Unit) {
         accessibilityGranted = isAccessibilityServiceEnabled(context)
+        val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+        batteryUnrestricted = pm.isIgnoringBatteryOptimizations(context.packageName)
         while (true) {
             delay(1000)
             val wasEnabled = accessibilityGranted
             accessibilityGranted = isAccessibilityServiceEnabled(context)
             overlayGranted = Settings.canDrawOverlays(context)
+            batteryUnrestricted = pm.isIgnoringBatteryOptimizations(context.packageName)
             
             if (Build.VERSION.SDK_INT >= 33) {
                 notificationGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
@@ -157,7 +166,7 @@ fun PermissionPage(onFinishSetup: () -> Unit = {}) {
         ) {
             Box(
                 modifier = Modifier
-                    .size(width = (390 * scale).dp, height = (360 * scale).dp)
+                    .size(width = (390 * scale).dp, height = (460 * scale).dp)
                     .background(
                         brush = Brush.verticalGradient(
                             colors = listOf(
@@ -222,7 +231,7 @@ fun PermissionPage(onFinishSetup: () -> Unit = {}) {
                                     putExtra(":settings:show_fragment_args", bundle)
                                 }
                                 context.startActivity(intent)
-                                Toast.makeText(context, "Find ClipSync under 'Installed apps' and enable it", Toast.LENGTH_LONG).show()
+                                Toast.makeText(context, "Find OTPSync under 'Installed apps' and enable it", Toast.LENGTH_LONG).show()
                             }
                         },
                         fontFamily = robotoFontFamily,
@@ -247,6 +256,34 @@ fun PermissionPage(onFinishSetup: () -> Unit = {}) {
                                 intent.data = android.net.Uri.parse("package:${context.packageName}")
                                 context.startActivity(intent)
                                 Toast.makeText(context, "Enable 'Allow display over other apps'", Toast.LENGTH_LONG).show()
+                            }
+                        },
+                        fontFamily = robotoFontFamily,
+                        scale = scale
+                     )
+                 }
+
+                 // --- Item 4: Background Sync (Battery Optimization) ---
+                 AnimatedVisibility(
+                    visible = showItem4,
+                    enter = fadeIn(tween(300)) + slideInHorizontally(initialOffsetX = { -40 }, animationSpec = tween(300)),
+                    modifier = Modifier.offset(x = (20 * scale).dp, y = (356 * scale).dp)
+                 ) {
+                     PermissionItem(
+                        iconRes = R.drawable.batteryshield,
+                        title = "Background Sync",
+                        description = "Keeps sync running even when app is closed.",
+                        isChecked = batteryUnrestricted,
+                        onToggle = {
+                            if (!batteryUnrestricted) {
+                                try {
+                                    val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                                        data = Uri.parse("package:${context.packageName}")
+                                    }
+                                    context.startActivity(intent)
+                                } catch (e: Exception) {
+                                    Toast.makeText(context, "Could not open Battery Settings", Toast.LENGTH_SHORT).show()
+                                }
                             }
                         },
                         fontFamily = robotoFontFamily,
