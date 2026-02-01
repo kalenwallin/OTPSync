@@ -107,26 +107,17 @@ struct LandingScreen: View {
                         .buttonStyle(.plain)
                         .offset(y: 170)
 
-                        // Footer Links (Bottom)
-                        VStack(spacing: 25) {
-                            Button(action: {
-                                print("Learn More tapped")
-                            }) {
-                                Text("Learn More")
-                                    .font(.system(size: 14, weight: .medium, design: .default))
-                                    .foregroundColor(Color(red: 0.216, green: 0.341, blue: 0.620))
+                        // Footer Link (Bottom)
+                        Button(action: {
+                            if let url = URL(string: "https://kalenwallin.com/android-mac-otp-sync") {
+                                NSWorkspace.shared.open(url)
                             }
-                            .buttonStyle(.plain)
-
-                            Button(action: {
-                                print("About tapped")
-                            }) {
-                                Text("About")
-                                    .font(.system(size: 14, weight: .medium, design: .default))
-                                    .foregroundColor(Color(red: 0.216, green: 0.341, blue: 0.620))
-                            }
-                            .buttonStyle(.plain)
+                        }) {
+                            Text("Learn More")
+                                .font(.system(size: 14, weight: .medium, design: .default))
+                                .foregroundColor(Color(red: 0.216, green: 0.341, blue: 0.620))
                         }
+                        .buttonStyle(.plain)
                         .offset(y: 265)
                     }
                     .frame(width: 590, height: 590)
