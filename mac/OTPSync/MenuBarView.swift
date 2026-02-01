@@ -71,26 +71,10 @@ struct MenuBarView: View {
                 VStack(spacing: 16) {
 
                     // App Branding Header
-                    HStack(spacing: 6) {
-                        Text("OTP Sync")
-                            .font(.system(size: 13, weight: .bold))
-                            .foregroundColor(.primary)
-                        Text("Convex")
-                            .font(.system(size: 10, weight: .medium))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(
-                                Capsule()
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [Color.purple, Color.blue],
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        ))
-                            )
-                    }
-                    .padding(.top, 12)
+                    Text("OTP Sync")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(.primary)
+                        .padding(.top, 12)
 
                     // Header: Status Area
                     HStack(spacing: 12) {

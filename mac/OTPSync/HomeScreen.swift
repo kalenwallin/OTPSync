@@ -353,7 +353,8 @@ struct SyncStatsCard: View {
                     StatRow(
                         icon: "flame.fill",
                         label: "Sync Streak",
-                        value: "\(clipboardManager.syncStreak) day\(clipboardManager.syncStreak == 1 ? "" : "s")"
+                        value:
+                            "\(clipboardManager.syncStreak) day\(clipboardManager.syncStreak == 1 ? "" : "s")"
                     )
 
                     Divider()
