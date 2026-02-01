@@ -227,7 +227,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 let newItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
                 if let button = newItem.button {
                     button.image = NSImage(
-                        systemSymbolName: "doc.on.clipboard", accessibilityDescription: "ClipSync")
+                        systemSymbolName: "doc.on.clipboard", accessibilityDescription: "OTPSync")
                     button.action = #selector(togglePopover(_:))
                 }
                 statusItem = newItem
@@ -261,7 +261,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func preventAppSleep() {
-        let reason = "ClipSync needs to monitor clipboard" as CFString
+        let reason = "OTPSync needs to monitor clipboard" as CFString
         let success = IOPMAssertionCreateWithName(
             kIOPMAssertionTypePreventUserIdleSystemSleep as CFString,
             IOPMAssertionLevel(kIOPMAssertionLevelOn),

@@ -62,7 +62,7 @@ class ClipboardManager: ObservableObject {
 
         lastChangeCount = pasteboard.changeCount
 
-        let queue = DispatchQueue(label: "com.clipsync.clipboard.monitor", qos: .userInitiated)
+        let queue = DispatchQueue(label: "com.otpsync.clipboard.monitor", qos: .userInitiated)
         let newTimer = DispatchSource.makeTimerSource(queue: queue)
 
         // Poll every 300ms

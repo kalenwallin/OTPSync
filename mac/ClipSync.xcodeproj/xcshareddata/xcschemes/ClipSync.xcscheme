@@ -16,7 +16,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "BF1CFB812E887C7500B7A454"
-               BuildableName = "ClipSync.app"
+               BuildableName = "OTPSync.app"
                BlueprintName = "ClipSync"
                ReferencedContainer = "container:ClipSync.xcodeproj">
             </BuildableReference>
@@ -45,7 +45,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "BF1CFB812E887C7500B7A454"
-            BuildableName = "ClipSync.app"
+            BuildableName = "OTPSync.app"
             BlueprintName = "ClipSync"
             ReferencedContainer = "container:ClipSync.xcodeproj">
          </BuildableReference>
@@ -62,7 +62,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "BF1CFB812E887C7500B7A454"
-            BuildableName = "ClipSync.app"
+            BuildableName = "OTPSync.app"
             BlueprintName = "ClipSync"
             ReferencedContainer = "container:ClipSync.xcodeproj">
          </BuildableReference>

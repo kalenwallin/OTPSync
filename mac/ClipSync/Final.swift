@@ -65,7 +65,7 @@ struct FinalScreen: View {
                 .opacity(cardsOpacity)
 
             // Subtitle
-            Text("To keep ClipSync working smoothly, allow these\npermissions")
+            Text("To keep OTPSync working smoothly, allow these\npermissions")
                 .font(.system(size: 24, weight: .medium, design: .default))
                 .kerning(-0.66)
                 .foregroundColor(Color(red: 0.125, green: 0.263, blue: 0.600))
@@ -101,7 +101,7 @@ struct FinalScreen: View {
                         .foregroundColor(.black)
 
                     Text(
-                        "Required so ClipSync can securely read and sync your copied text in the background."
+                        "Required so OTPSync can securely read and sync your copied text in the background."
                     )
                     .font(.system(size: 12))
                     .foregroundColor(Color(red: 0.314, green: 0.286, blue: 0.286))

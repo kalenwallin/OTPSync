@@ -28,7 +28,7 @@ class UpdateChecker: ObservableObject {
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        request.setValue("ClipSync-Mac-App", forHTTPHeaderField: "User-Agent")
+        request.setValue("OTPSync-Mac-App", forHTTPHeaderField: "User-Agent")
 
         URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
             guard let data = data, error == nil else {
