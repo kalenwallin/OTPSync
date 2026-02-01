@@ -341,7 +341,7 @@ object ConvexManager {
                 ) { jsonObj ->
                     ConvexClipboardItem(
                         id = jsonObj["_id"]?.jsonPrimitive?.content ?: "",
-                        creationTime = jsonObj["_creationTime"]?.jsonPrimitive?.content?.toLongOrNull() ?: 0L,
+                        creationTime = jsonObj["_creationTime"]?.jsonPrimitive?.content?.toDoubleOrNull()?.toLong() ?: 0L,
                         content = jsonObj["content"]?.jsonPrimitive?.content ?: "",
                         pairingId = jsonObj["pairingId"]?.jsonPrimitive?.content ?: "",
                         sourceDeviceId = jsonObj["sourceDeviceId"]?.jsonPrimitive?.content ?: "",
@@ -558,7 +558,7 @@ object ConvexManager {
                 
                 ConvexClipboardItem(
                     id = jsonObj["_id"]?.jsonPrimitive?.content ?: "",
-                    creationTime = jsonObj["_creationTime"]?.jsonPrimitive?.content?.toLongOrNull() ?: 0L,
+                    creationTime = jsonObj["_creationTime"]?.jsonPrimitive?.content?.toDoubleOrNull()?.toLong() ?: 0L,
                     content = decryptedContent,
                     pairingId = jsonObj["pairingId"]?.jsonPrimitive?.content ?: "",
                     sourceDeviceId = sourceDeviceId,

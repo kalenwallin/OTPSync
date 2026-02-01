@@ -420,11 +420,11 @@ struct ClipboardHistoryRow: View {
                         .font(.system(size: 10, weight: .medium))
                         .foregroundColor(.black.opacity(0.5))
                         .textCase(.uppercase)
-                    
+
                     Text("•")
                         .font(.system(size: 10))
                         .foregroundColor(.black.opacity(0.3))
-                    
+
                     HStack(spacing: 3) {
                         Image(systemName: item.direction == .received ? "iphone" : "laptopcomputer")
                             .font(.system(size: 9))
@@ -434,7 +434,7 @@ struct ClipboardHistoryRow: View {
                             .foregroundColor(.black.opacity(0.5))
                             .textCase(.uppercase)
                     }
-                    
+
                     Spacer()
                 }
 

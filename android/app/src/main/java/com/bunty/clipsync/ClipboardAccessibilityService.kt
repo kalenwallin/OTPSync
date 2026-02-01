@@ -318,7 +318,7 @@ class ClipboardAccessibilityService : AccessibilityService() {
         convexPollingJob?.cancel()
         
         convexPollingJob = serviceScope.launch {
-            var lastSeenTimestamp: Long? = null
+            var lastSeenItemId: String? = null
             
             while (isActive) {
                 try {
@@ -326,13 +326,15 @@ class ClipboardAccessibilityService : AccessibilityService() {
                     
                     if (latest != null) {
                         val content = latest.content
-                        val timestamp = latest.creationTime
+                        val itemId = latest.id
                         
-                        // Only process if newer than last seen and different from current clipboard
-                        if ((lastSeenTimestamp == null || timestamp > lastSeenTimestamp) &&
+                        // Only process if this is a new item we haven't seen before
+                        // and content is different from current clipboard
+                        if (itemId != lastSeenItemId && itemId.isNotEmpty() &&
                             content != lastSyncedContent && content != lastClipboardContent) {
                             
-                            lastSeenTimestamp = timestamp
+                            Log.d(TAG, "New clipboard item received from Mac: ${content.take(20)}...")
+                            lastSeenItemId = itemId
                             ignoreNextChange = true
                             lastSyncedContent = content
                             lastClipboardContent = content
@@ -347,8 +349,11 @@ class ClipboardAccessibilityService : AccessibilityService() {
                             handler.postDelayed({
                                 ignoreNextChange = false
                             }, 2000)
-                        } else if (lastSeenTimestamp == null) {
-                            lastSeenTimestamp = timestamp
+                        } else if (lastSeenItemId == null && itemId.isNotEmpty()) {
+                            // Initialize lastSeenItemId on first run without copying
+                            // This prevents copying stale content on service restart
+                            lastSeenItemId = itemId
+                            Log.d(TAG, "Initialized with existing item: $itemId")
                         }
                     }
                 } catch (e: Exception) {
