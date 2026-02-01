@@ -210,9 +210,19 @@ fun PermissionPage(onFinishSetup: () -> Unit = {}) {
                         isChecked = accessibilityGranted,
                         onToggle = {
                             if (!accessibilityGranted) {
-                                val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                                // Try to open the specific accessibility service settings for this app
+                                val componentName = android.content.ComponentName(
+                                    context.packageName,
+                                    ClipboardAccessibilityService::class.java.name
+                                )
+                                val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+                                    val bundle = android.os.Bundle()
+                                    bundle.putString(":settings:fragment_args_key", componentName.flattenToString())
+                                    putExtra(":settings:fragment_args_key", componentName.flattenToString())
+                                    putExtra(":settings:show_fragment_args", bundle)
+                                }
                                 context.startActivity(intent)
-                                Toast.makeText(context, "Enable OTPSync in Accessibility", Toast.LENGTH_LONG).show()
+                                Toast.makeText(context, "Find ClipSync under 'Installed apps' and enable it", Toast.LENGTH_LONG).show()
                             }
                         },
                         fontFamily = robotoFontFamily,

@@ -119,6 +119,8 @@ struct ConnectLottieView: NSViewRepresentable {
         let containerView = NSView(frame: .zero)
         containerView.wantsLayer = true
         containerView.layer?.masksToBounds = true
+        containerView.layer?.backgroundColor = .clear
+        containerView.layer?.borderWidth = 0
 
         // Create animation view
         let animationView = LottieAnimationView(name: filename)
@@ -126,6 +128,9 @@ struct ConnectLottieView: NSViewRepresentable {
         animationView.loopMode = .playOnce
         animationView.animationSpeed = 0.75
         animationView.backgroundBehavior = .pauseAndRestore
+        animationView.wantsLayer = true
+        animationView.layer?.backgroundColor = .clear
+        animationView.layer?.borderWidth = 0
 
         // Critical: Use autoresizing mask for proper scaling
         animationView.autoresizingMask = [.width, .height]
