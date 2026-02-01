@@ -415,11 +415,26 @@ struct ClipboardHistoryRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
-                HStack {
+                HStack(spacing: 6) {
                     Text("Copied \(timeAgo(from: item.timestamp))")
                         .font(.system(size: 10, weight: .medium))
                         .foregroundColor(.black.opacity(0.5))
                         .textCase(.uppercase)
+                    
+                    Text("•")
+                        .font(.system(size: 10))
+                        .foregroundColor(.black.opacity(0.3))
+                    
+                    HStack(spacing: 3) {
+                        Image(systemName: item.direction == .received ? "iphone" : "laptopcomputer")
+                            .font(.system(size: 9))
+                            .foregroundColor(.black.opacity(0.5))
+                        Text(item.deviceName)
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundColor(.black.opacity(0.5))
+                            .textCase(.uppercase)
+                    }
+                    
                     Spacer()
                 }
 
