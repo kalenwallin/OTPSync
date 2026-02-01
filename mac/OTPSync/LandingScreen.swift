@@ -109,7 +109,8 @@ struct LandingScreen: View {
 
                         // Footer Link (Bottom)
                         Button(action: {
-                            if let url = URL(string: "https://kalenwallin.com/android-mac-otp-sync") {
+                            if let url = URL(string: "https://kalenwallin.com/android-mac-otp-sync")
+                            {
                                 NSWorkspace.shared.open(url)
                             }
                         }) {

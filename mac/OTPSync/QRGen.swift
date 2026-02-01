@@ -60,8 +60,9 @@ struct QRGenScreen: View {
 
                         Image("android")
                             .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 36, height: 36)
+                            .renderingMode(.template)
+                            .foregroundColor(.black)
+                            .frame(width: 32, height: 20)
                             .offset(x: 130, y: 35)
 
                         HStack(alignment: .center, spacing: 14) {

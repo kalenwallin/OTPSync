@@ -3,6 +3,7 @@
 // OTPSync
 //
 
+import AppKit
 import SwiftUI
 
 struct SplashScreen: View {
@@ -148,21 +149,16 @@ struct LandingScreenAnimatedContent: View {
 
             // Footer
             if showFooter {
-                VStack(spacing: 15) {
-                    Button(action: { print("Learn More tapped") }) {
-                        Text("Learn More")
-                            .font(.system(size: 14, weight: .medium, design: .default))
-                            .foregroundColor(Color(red: 0.216, green: 0.341, blue: 0.620))
+                Button(action: {
+                    if let url = URL(string: "https://kalenwallin.com/android-mac-otp-sync") {
+                        NSWorkspace.shared.open(url)
                     }
-                    .buttonStyle(.plain)
-
-                    Button(action: { print("About tapped") }) {
-                        Text("About")
-                            .font(.system(size: 14, weight: .medium, design: .default))
-                            .foregroundColor(Color(red: 0.216, green: 0.341, blue: 0.620))
-                    }
-                    .buttonStyle(.plain)
+                }) {
+                    Text("Learn More")
+                        .font(.system(size: 14, weight: .medium, design: .default))
+                        .foregroundColor(Color(red: 0.216, green: 0.341, blue: 0.620))
                 }
+                .buttonStyle(.plain)
                 .offset(y: 245)
                 .transition(.opacity)
             }
