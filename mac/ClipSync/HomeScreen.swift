@@ -1,6 +1,5 @@
 import SwiftUI
 import AppKit
-import CryptoKit
 import Lottie
 
 struct HomeScreen: View {
@@ -11,9 +10,6 @@ struct HomeScreen: View {
     @AppStorage("syncToMac") private var syncToMac = true
     @AppStorage("syncFromMac") private var syncFromMac = true
     
-    @State private var encryptionTestResult: String? = nil
-    @State private var isTestingEncryption = false
-    @State private var showEncryptionSuccess = false
     @State private var hoveredClipboardItem: UUID? = nil
     @State private var showRepairQR = false
 
@@ -204,15 +200,6 @@ struct HomeScreen: View {
                                 }
                                 .padding(.leading, 15)
                             }
-                            
-                            // --- Encryption Test Card ---
-                            CheckEncryptionCard(
-                                encryptionTestResult: encryptionTestResult,
-                                isTestingEncryption: isTestingEncryption,
-                                showEncryptionSuccess: showEncryptionSuccess,
-                                testAction: testEncryption
-                            )
-                            .frame(width: 200, height: 212)
                         }
                         .padding(.horizontal, 30)
                         
@@ -325,79 +312,6 @@ struct HomeScreen: View {
         }
         .enableInjection()
     }
-    
-    private func testEncryption() {
-        isTestingEncryption = true
-        encryptionTestResult = nil
-        showEncryptionSuccess = false
-        
-        DispatchQueue.global(qos: .userInitiated).async {
-            let testString = "ClipSync Encryption Test - \(UUID().uuidString)"
-            let encrypted = encryptTestString(testString)
-            let decrypted = decryptTestString(encrypted)
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                isTestingEncryption = false
-                
-                if let decrypted = decrypted, decrypted == testString {
-                    // Success! Just show animation, no text
-                    showEncryptionSuccess = true
-                    
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                        showEncryptionSuccess = false
-                    }
-                } else {
-                    encryptionTestResult = " Encryption test failed"
-                }
-            }
-        }
-    }
-    
-    private func encryptTestString(_ string: String) -> String {
-        guard let data = string.data(using: .utf8) else { return "" }
-        let sharedSecretHex = Secrets.fallbackEncryptionKey
-        
-        do {
-            let keyData = hexToData(hex: sharedSecretHex)
-            let key = SymmetricKey(data: keyData)
-            let sealedBox = try AES.GCM.seal(data, using: key)
-            return sealedBox.combined?.base64EncodedString() ?? ""
-        } catch {
-            print(" Encryption test failed: \(error)")
-            return ""
-        }
-    }
-    
-    private func decryptTestString(_ base64String: String) -> String? {
-        guard let data = Data(base64Encoded: base64String) else { return nil }
-        let sharedSecretHex = Secrets.fallbackEncryptionKey
-        
-        do {
-            let keyData = hexToData(hex: sharedSecretHex)
-            let key = SymmetricKey(data: keyData)
-            let sealedBox = try AES.GCM.SealedBox(combined: data)
-            let decryptedData = try AES.GCM.open(sealedBox, using: key)
-            return String(data: decryptedData, encoding: .utf8)
-        } catch {
-            print(" Decryption test failed: \(error)")
-            return nil
-        }
-    }
-    
-    private func hexToData(hex: String) -> Data {
-        var data = Data()
-        var temp = ""
-        for char in hex {
-            temp.append(char)
-            if temp.count == 2 {
-                if let byte = UInt8(temp, radix: 16) {
-                    data.append(byte)
-                }
-                temp = ""
-            }
-        }
-        return data
-    }
 }
 
 // MARK: - Helper Views
@@ -451,59 +365,7 @@ struct TickLottieView: NSViewRepresentable {
     }
 }
 
-struct LoadingLottieView: NSViewRepresentable {
-    func makeNSView(context: Context) -> NSView {
-        let containerView = NSView(frame: .zero)
-        containerView.wantsLayer = true
-        containerView.layer?.masksToBounds = true
-        
-        let animationView = LottieAnimationView(name: "Loading")
-        animationView.contentMode = .scaleAspectFit
-        animationView.loopMode = .loop
-        animationView.animationSpeed = 1.0
-        animationView.backgroundBehavior = .pauseAndRestore
-        animationView.autoresizingMask = [.width, .height]
-        animationView.translatesAutoresizingMaskIntoConstraints = true
-        
-        containerView.addSubview(animationView)
-        animationView.play()
-        
-        return containerView
-    }
-    
-    func updateNSView(_ nsView: NSView, context: Context) {
-        if let animationView = nsView.subviews.first as? LottieAnimationView {
-            animationView.frame = nsView.bounds
-        }
-    }
-}
 
-struct LockLottieView: NSViewRepresentable {
-    func makeNSView(context: Context) -> NSView {
-        let containerView = NSView(frame: .zero)
-        containerView.wantsLayer = true
-        containerView.layer?.masksToBounds = true
-        
-        let animationView = LottieAnimationView(name: "lock")
-        animationView.contentMode = .scaleAspectFit
-        animationView.loopMode = .playOnce
-        animationView.animationSpeed = 1.0
-        animationView.backgroundBehavior = .pauseAndRestore
-        animationView.autoresizingMask = [.width, .height]
-        animationView.translatesAutoresizingMaskIntoConstraints = true
-        
-        containerView.addSubview(animationView)
-        animationView.play()
-        
-        return containerView
-    }
-    
-    func updateNSView(_ nsView: NSView, context: Context) {
-        if let animationView = nsView.subviews.first as? LottieAnimationView {
-            animationView.frame = nsView.bounds
-        }
-    }
-}
 
 struct RePairButton: View {
     let action: () -> Void
@@ -542,113 +404,6 @@ struct RePairButton: View {
         .animation(.spring(response: 0.3, dampingFraction: 0.5), value: isHovered)
         .onHover { hovering in
             isHovered = hovering
-        }
-    }
-}
-
-struct CheckEncryptionCard: View {
-    let encryptionTestResult: String?
-    let isTestingEncryption: Bool
-    let showEncryptionSuccess: Bool
-    let testAction: () -> Void
-    
-    @State private var isHovered = false
-    
-    var body: some View {
-        InnerGlassCard {
-            ZStack {
-                // Main Content (Hidden when showing success animation)
-                VStack(alignment: .leading, spacing: 0) {
-                    HStack(alignment: .top, spacing: 12) {
-                        Text("Check\nEncryption")
-                            .font(.system(size: 22, weight: .bold))
-                            .lineLimit(2)
-                            .minimumScaleFactor(0.5)
-                            .foregroundColor(.black)
-                            .fixedSize(horizontal: false, vertical: true)
-                        
-                        Spacer()
-                        
-                        if #available(macOS 14.0, *) {
-                            Image(systemName: "lock.shield.fill")
-                                .font(.system(size: 28))
-                                .foregroundColor(.black)
-                                .symbolEffect(.variableColor.iterative, options: .nonRepeating)
-                        } else {
-                            Image(systemName: "lock.shield.fill")
-                                .font(.system(size: 28))
-                                .foregroundColor(.black)
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 20)
-                    .opacity(showEncryptionSuccess ? 0 : 1) // Hide when showing success
-                    
-                    Spacer()
-                    
-                    // Show error text if needed
-                    if let result = encryptionTestResult, !result.contains("") {
-                         HStack {
-                            Image(systemName: "xmark.square.fill")
-                                .foregroundColor(.red)
-                            Text(result.replacingOccurrences(of: " ", with: ""))
-                                .font(.system(size: 12))
-                                .foregroundColor(.black.opacity(0.8))
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 8)
-                    }
-                    
-                    // Button (Hidden when showing success)
-                    if isHovered || isTestingEncryption {
-                        Button {
-                            testAction()
-                        } label: {
-                            HStack(spacing: 6) {
-                                if isTestingEncryption {
-                                    LoadingLottieView()
-                                        .frame(width: 18, height: 18)
-                                    Text("Testing...")
-                                        .font(.system(size: 13, weight: .medium))
-                                } else {
-                                    Image(systemName: "lock.fill")
-                                        .font(.system(size: 12))
-                                    Text("Test Now")
-                                        .font(.system(size: 13, weight: .medium))
-                                }
-                            }
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 36)
-                            .background(Color.black)
-                            .cornerRadius(18)
-                        }
-                        .buttonStyle(.plain)
-                        .disabled(isTestingEncryption)
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 20)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
-                        .opacity(showEncryptionSuccess ? 0 : 1)
-                    } else {
-                        Spacer()
-                            .frame(height: 56)
-                    }
-                }
-                
-                // Huge Success Animation Overlay
-                if showEncryptionSuccess {
-                    LockLottieView()
-                        .frame(width: 150, height: 150)
-                        .transition(.scale.combined(with: .opacity))
-                }
-            }
-        }
-        .scaleEffect(isHovered ? 1.03 : 1.0)
-        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isHovered)
-        .onHover { hovering in
-            withAnimation(.easeInOut(duration: 0.2)) {
-                isHovered = hovering
-            }
         }
     }
 }

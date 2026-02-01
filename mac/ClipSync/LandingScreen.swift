@@ -4,17 +4,17 @@
 //
 // Created by Bhanu Gothwal on 21/09/25.
 
+import AppKit
 import Foundation
 import SwiftUI
-import AppKit
 
 struct LandingScreen: View {
-    
+
     @State private var navigateToQR = false
     var isBackgroundPaused: Bool = false
-    
+
     #if DEBUG
-    @ObserveInjection var forceRedraw
+        @ObserveInjection var forceRedraw
     #endif
 
     var body: some View {
@@ -24,7 +24,7 @@ struct LandingScreen: View {
                     // --- Animated Mesh ---
                     MeshBackground(shouldAnimate: !isBackgroundPaused)
                         .ignoresSafeArea()
-                    
+
                     // --- Content Layout ---
                     ZStack {
                         // Title Section
@@ -33,7 +33,7 @@ struct LandingScreen: View {
                                 .font(.system(size: 64, weight: .bold, design: .default))
                                 .kerning(-3)
                                 .foregroundColor(.white)
-                            
+
                             Text("ReImagined the Apple Way")
                                 .font(.system(size: 28, weight: .semibold, design: .default))
                                 .kerning(-1)
@@ -42,7 +42,7 @@ struct LandingScreen: View {
                                     LinearGradient(
                                         colors: [
                                             Color(red: 0.643, green: 0.537, blue: 0.839),
-                                            Color(red: 0.314, green: 0.200, blue: 0.812)
+                                            Color(red: 0.314, green: 0.200, blue: 0.812),
                                         ],
                                         startPoint: .leading,
                                         endPoint: .trailing
@@ -50,14 +50,14 @@ struct LandingScreen: View {
                                 )
                         }
                         .offset(y: -220)
-                        
+
                         // Logo (Center)
                         Image("logo")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 175, height: 165)
                             .offset(y: -20)
-                        
+
                         // Get Started Button
                         Button(action: {
                             navigateToQR = true
@@ -79,13 +79,14 @@ struct LandingScreen: View {
                                                     Color.white.opacity(0.35),
                                                     Color.white.opacity(0.12),
                                                     Color.white.opacity(0.02),
-                                                    Color.white.opacity(0.20)
+                                                    Color.white.opacity(0.20),
                                                 ],
                                                 startPoint: .topLeading,
                                                 endPoint: .bottomTrailing
                                             )
                                         )
-                                        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                                        .clipShape(
+                                            RoundedRectangle(cornerRadius: 24, style: .continuous))
                                 )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 24, style: .continuous)
@@ -93,7 +94,7 @@ struct LandingScreen: View {
                                             LinearGradient(
                                                 colors: [
                                                     Color.white.opacity(0.55),
-                                                    Color.white.opacity(0.15)
+                                                    Color.white.opacity(0.15),
                                                 ],
                                                 startPoint: .top,
                                                 endPoint: .bottom
@@ -105,7 +106,7 @@ struct LandingScreen: View {
                         }
                         .buttonStyle(.plain)
                         .offset(y: 170)
-                        
+
                         // Footer Links (Bottom)
                         VStack(spacing: 25) {
                             Button(action: {
@@ -116,7 +117,7 @@ struct LandingScreen: View {
                                     .foregroundColor(Color(red: 0.216, green: 0.341, blue: 0.620))
                             }
                             .buttonStyle(.plain)
-                            
+
                             Button(action: {
                                 print("About tapped")
                             }) {
@@ -145,4 +146,3 @@ struct LandingScreen: View {
     LandingScreen()
         .frame(width: 590, height: 590)
 }
-

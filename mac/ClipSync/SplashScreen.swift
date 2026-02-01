@@ -13,7 +13,7 @@ struct SplashScreen: View {
     @State private var startOscillation = false
 
     #if DEBUG
-    @ObserveInjection var forceRedraw
+        @ObserveInjection var forceRedraw
     #endif
 
     var body: some View {
@@ -69,7 +69,7 @@ struct LandingScreenAnimatedContent: View {
     @State private var navigateToQR = false
 
     #if DEBUG
-    @ObserveInjection var forceRedraw
+        @ObserveInjection var forceRedraw
     #endif
 
     var body: some View {
@@ -90,7 +90,7 @@ struct LandingScreenAnimatedContent: View {
                             LinearGradient(
                                 colors: [
                                     Color(red: 0.643, green: 0.537, blue: 0.839),
-                                    Color(red: 0.314, green: 0.200, blue: 0.812)
+                                    Color(red: 0.314, green: 0.200, blue: 0.812),
                                 ],
                                 startPoint: .leading,
                                 endPoint: .trailing
@@ -131,7 +131,7 @@ struct LandingScreenAnimatedContent: View {
                                             LinearGradient(
                                                 colors: [
                                                     Color.white.opacity(0.55),
-                                                    Color.white.opacity(0.15)
+                                                    Color.white.opacity(0.15),
                                                 ],
                                                 startPoint: .top,
                                                 endPoint: .bottom
@@ -175,8 +175,12 @@ struct LandingScreenAnimatedContent: View {
         }
         .onAppear {
             withAnimation(.easeOut(duration: 0.5).delay(0.1)) { showTitle = true }
-            withAnimation(.spring(response: 0.6, dampingFraction: 0.75).delay(0.25)) { showLogo = true }
-            withAnimation(.spring(response: 0.55, dampingFraction: 0.8).delay(0.4)) { showButton = true }
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.75).delay(0.25)) {
+                showLogo = true
+            }
+            withAnimation(.spring(response: 0.55, dampingFraction: 0.8).delay(0.4)) {
+                showButton = true
+            }
             withAnimation(.easeOut(duration: 0.4).delay(0.55)) { showFooter = true }
         }
         .enableInjection()
@@ -187,4 +191,3 @@ struct LandingScreenAnimatedContent: View {
     SplashScreen()
         .frame(width: 590, height: 590)
 }
-
