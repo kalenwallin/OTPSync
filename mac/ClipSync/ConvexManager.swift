@@ -128,7 +128,28 @@ class ConvexManager: ObservableObject {
         }
 
         // Re-serialize value and decode to type
-        let valueData = try JSONSerialization.data(withJSONObject: value)
+        // JSONSerialization requires top-level arrays/dicts, so wrap primitives
+        let valueData: Data
+        if JSONSerialization.isValidJSONObject(value) {
+            valueData = try JSONSerialization.data(withJSONObject: value)
+        } else {
+            // Handle primitive types (String, Number, Bool) by wrapping in array
+            let wrapped = [value]
+            let wrappedData = try JSONSerialization.data(withJSONObject: wrapped)
+            // Decode the wrapped array and extract the single element
+            guard let wrappedString = String(data: wrappedData, encoding: .utf8),
+                  wrappedString.count > 2 else {
+                throw ConvexError.decodingError
+            }
+            // Remove the array brackets to get just the primitive JSON
+            let startIndex = wrappedString.index(wrappedString.startIndex, offsetBy: 1)
+            let endIndex = wrappedString.index(wrappedString.endIndex, offsetBy: -1)
+            let primitiveJson = String(wrappedString[startIndex..<endIndex])
+            guard let data = primitiveJson.data(using: .utf8) else {
+                throw ConvexError.decodingError
+            }
+            valueData = data
+        }
         let decoder = JSONDecoder()
         return try decoder.decode(T.self, from: valueData)
     }
