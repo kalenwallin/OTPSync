@@ -351,6 +351,7 @@ fun Homescreen(
                                     isActive = isAccessibilityEnabled,
                                     fontFamily = robotoFontFamily,
                                     scale = scale,
+                                    subtitle = "Accessibility",
                                     onClick = {
                                         if (!isAccessibilityEnabled) {
                                             // Try to open the specific accessibility service settings for this app
@@ -374,10 +375,11 @@ fun Homescreen(
 
                                 // Remote Device Status
                                 StatusRow(
-                                    label = "Mac Clipboard", // Changed name
+                                    label = "Mac Clipboard",
                                     isActive = (macDeviceName != "Unknown Device"),
                                     fontFamily = robotoFontFamily,
-                                    scale = scale
+                                    scale = scale,
+                                    subtitle = "Paired Device"
                                 )
 
                                 HorizontalDivider(modifier = Modifier.padding(vertical = (16 * scale).dp), color = Color(0xFFE5E5EA))
@@ -389,6 +391,7 @@ fun Homescreen(
                                     isWarning = true,
                                     fontFamily = robotoFontFamily,
                                     scale = scale,
+                                    subtitle = "Battery Optimization",
                                     onClick = {
                                         if (!isBatteryUnrestricted) {
                                             try {
@@ -579,6 +582,7 @@ fun StatusRow(
     isWarning: Boolean = false,
     fontFamily: FontFamily,
     scale: Float = 1f,
+    subtitle: String? = null,
     onClick: () -> Unit = {}
 ) {
     Row(
@@ -608,13 +612,22 @@ fun StatusRow(
             modifier = Modifier.size((24 * scale).dp)
         )
         Spacer(modifier = Modifier.width((14 * scale).dp))
-        Text(
-            text = label,
-            color = Color.Black,
-            fontSize = (16 * scale).coerceIn(14f, 16f).sp,
-            fontFamily = fontFamily,
-            modifier = Modifier.weight(1f)
-        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = label,
+                color = Color.Black,
+                fontSize = (16 * scale).coerceIn(14f, 16f).sp,
+                fontFamily = fontFamily
+            )
+            if (subtitle != null) {
+                Text(
+                    text = subtitle,
+                    color = Color.Gray,
+                    fontSize = (12 * scale).coerceIn(10f, 12f).sp,
+                    fontFamily = fontFamily
+                )
+            }
+        }
         
         if (isActive) {
             Text(
