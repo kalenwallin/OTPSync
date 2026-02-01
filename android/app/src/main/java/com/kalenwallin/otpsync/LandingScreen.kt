@@ -165,7 +165,7 @@ fun OTPSyncTitle() {
     ) {
         // Blur / Glow Layer (Behind)
         Text(
-            text = "OTPSync",
+            text = "OTP Sync",
             fontSize = titleFontSize,
             fontFamily = FontFamily(Font(R.font.roboto_bold)),
             fontWeight = FontWeight.Bold,
@@ -192,7 +192,7 @@ fun OTPSyncTitle() {
 
         // Main Text (Front)
         Text(
-            text = "OTPSync",
+            text = "OTP Sync",
             fontSize = titleFontSize,
             fontFamily = FontFamily(Font(R.font.roboto_bold)),
             fontWeight = FontWeight.Bold,
@@ -294,18 +294,6 @@ fun GlassmorphismCard(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(
-                        brush = Brush.linearGradient(
-                            colors = listOf(
-                                Color(0xFF6F7EF0).copy(alpha = 0.3f),
-                                Color(0xFF8568A6).copy(alpha = 0.3f)
-                            ),
-                            start = Offset(0f, 0f),
-                            end = Offset(Float.POSITIVE_INFINITY, 0f)
-                        ),
-                        shape = RoundedCornerShape(cornerRadius)
-                    )
-                    .clip(RoundedCornerShape(cornerRadius))
             ) {
                 // Feature card
                 Card(
@@ -398,23 +386,6 @@ fun GlassmorphismCard(
                         animationSpec = tween(durationMillis = 800)
                     )
                 }
-
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data("file:///android_asset/Logo.svg")
-                        .decoderFactory(SvgDecoder.Factory())
-                        .build(),
-                    contentDescription = "Logo",
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .offset(y = logoOffsetY)
-                        .size(width = logoWidth, height = logoHeight)
-                        .graphicsLayer {
-                            scaleX = logoScaleAnim.value
-                            scaleY = logoScaleAnim.value
-                            alpha = logoAlpha.value
-                        }
-                )
 
                 // Get Started Button
                 GetStartedButton(

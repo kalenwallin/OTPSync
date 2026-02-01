@@ -101,16 +101,6 @@ struct LandingScreenAnimatedContent: View {
                 .transition(.move(edge: .top).combined(with: .opacity))
             }
 
-            // Logo
-            if showLogo {
-                Image("logo")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 175, height: 165)
-                    .offset(y: -20)
-                    .transition(.scale(scale: 0.92).combined(with: .opacity))
-            }
-
             // Get Started Button (decorative - actual navigation happens in LandingScreen)
             if showButton {
                 Button(action: {}) {

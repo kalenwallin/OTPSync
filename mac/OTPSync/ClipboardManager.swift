@@ -235,15 +235,22 @@ class ClipboardManager: ObservableObject {
                 // History Update (UI)
                 if let lastItem = self.history.first, lastItem.content == content { return }
 
+                let deviceName = PairingManager.shared.pairedDeviceName
                 let newItem = ClipboardItem(
                     content: content,
                     timestamp: Date(),
-                    deviceName: PairingManager.shared.pairedDeviceName,
+                    deviceName: deviceName,
                     direction: .received
                 )
                 self.history.insert(newItem, at: 0)
                 self.lastSyncedTime = Date()
                 self.incrementSyncCount()
+                
+                // Send macOS notification
+                NotificationManager.shared.sendClipboardSyncNotification(
+                    content: content,
+                    deviceName: deviceName
+                )
             }
         )
 
