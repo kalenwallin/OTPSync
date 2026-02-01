@@ -147,7 +147,10 @@ struct MenuBarView: View {
                             color: .blue,
                             isHovering: $isHoveringSend
                         ) {
-                            clipboardManager.startMonitoring()
+                            // Dispatch async to prevent menu UI freeze
+                            DispatchQueue.main.async {
+                                clipboardManager.startMonitoring()
+                            }
                         }
 
                         // Pull Button
@@ -157,7 +160,10 @@ struct MenuBarView: View {
                             color: .purple,
                             isHovering: $isHoveringPull
                         ) {
-                            clipboardManager.pullClipboard()
+                            // Dispatch async to prevent menu UI freeze
+                            DispatchQueue.main.async {
+                                clipboardManager.pullClipboard()
+                            }
                         }
                     }
                     .padding(.horizontal, 16)
