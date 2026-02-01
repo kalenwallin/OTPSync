@@ -143,7 +143,7 @@ struct LandingScreenAnimatedContent: View {
                         )
                 }
                 .buttonStyle(.plain)
-                .offset(y: 150)
+                .offset(y: 170)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
 
@@ -159,7 +159,7 @@ struct LandingScreenAnimatedContent: View {
                         .foregroundColor(Color(red: 0.216, green: 0.341, blue: 0.620))
                 }
                 .buttonStyle(.plain)
-                .offset(y: 245)
+                .offset(y: 265)
                 .transition(.opacity)
             }
         }
