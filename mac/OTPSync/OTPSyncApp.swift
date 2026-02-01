@@ -227,7 +227,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 let newItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
                 if let button = newItem.button {
                     button.image = NSImage(
-                        systemSymbolName: "doc.on.clipboard", accessibilityDescription: "OTPSync")
+                        systemSymbolName: "doc.on.clipboard", accessibilityDescription: "OTP Sync")
                     button.action = #selector(togglePopover(_:))
                 }
                 statusItem = newItem

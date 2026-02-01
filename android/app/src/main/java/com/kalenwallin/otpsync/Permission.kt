@@ -231,7 +231,7 @@ fun PermissionPage(onFinishSetup: () -> Unit = {}) {
                                     putExtra(":settings:show_fragment_args", bundle)
                                 }
                                 context.startActivity(intent)
-                                Toast.makeText(context, "Find OTPSync under 'Installed apps' and enable it", Toast.LENGTH_LONG).show()
+                                Toast.makeText(context, "Find OTP Sync under 'Installed apps' and enable it", Toast.LENGTH_LONG).show()
                             }
                         },
                         fontFamily = robotoFontFamily,

@@ -74,7 +74,7 @@ struct MenuBarView: View {
 
                     // App Branding Header
                     HStack(spacing: 6) {
-                        Text("OTPSync")
+                        Text("OTP Sync")
                             .font(.system(size: 13, weight: .bold))
                             .foregroundColor(.primary)
                         Text("Convex")

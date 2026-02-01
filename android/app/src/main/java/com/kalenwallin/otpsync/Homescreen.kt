@@ -365,7 +365,7 @@ fun Homescreen(
                                                 putExtra(":settings:show_fragment_args", bundle)
                                             }
                                             context.startActivity(intent)
-                                            Toast.makeText(context, "Find OTPSync under 'Installed apps' and enable it", Toast.LENGTH_LONG).show()
+                                            Toast.makeText(context, "Find OTP Sync under 'Installed apps' and enable it", Toast.LENGTH_LONG).show()
                                         }
                                     }
                                 )
@@ -442,7 +442,7 @@ fun Homescreen(
                         ) {
                              scope.launch {
                                  try {
-                                     ConvexManager.sendClipboard(context, "Hello from OTPSync! ")
+                                     ConvexManager.sendClipboard(context, "Hello from OTP Sync! ")
                                      withContext(Dispatchers.Main) {
                                          Toast.makeText(context, "Sent to Mac!", Toast.LENGTH_SHORT).show()
                                      }
@@ -494,7 +494,7 @@ fun Homescreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "OTPSync v1.0.0",
+                    text = "OTP Sync v1.0.0",
                     fontFamily = robotoFontFamily,
                     fontSize = (12 * scale).coerceIn(10f, 12f).sp,
                     color = Color(0xFF3C3C43).copy(alpha = 0.4f)

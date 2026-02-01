@@ -77,7 +77,7 @@ struct LandingScreenAnimatedContent: View {
             // Title
             if showTitle {
                 VStack(spacing: 8) {
-                    Text("OTPSync")
+                    Text("OTP Sync")
                         .font(.system(size: 64, weight: .bold, design: .default))
                         .kerning(-3)
                         .foregroundColor(.white)

@@ -207,7 +207,7 @@ fun QRScanScreen(
                             Spacer(modifier = Modifier.weight(1f))
 
                             Text(
-                                text = "Open OTPSync on your Mac and scan the QR code to connect instantly.",
+                                text = "Open OTP Sync on your Mac and scan the QR code to connect instantly.",
                                 fontFamily = robotoFontFamily,
                                 fontWeight = FontWeight.Medium,
                                 fontSize = subtitleFontSize,
