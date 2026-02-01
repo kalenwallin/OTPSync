@@ -1,6 +1,6 @@
 //
 // ConvexManager.swift
-// ClipSync - Convex Backend
+// OTPSync - Convex Backend
 //
 // Replaces FirebaseManager.swift for Convex-based real-time sync
 //

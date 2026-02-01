@@ -100,7 +100,7 @@ fun LandingScreen(
                 enter = androidx.compose.animation.fadeIn(tween(800)) +
                         androidx.compose.animation.slideInVertically(initialOffsetY = { -100 }, animationSpec = tween(800, easing = androidx.compose.animation.core.FastOutSlowInEasing))
             ) {
-                ClipSyncTitle()
+                OTPSyncTitle()
             }
 
             // Subtitle: Slide In from Left + Fade In
@@ -150,7 +150,7 @@ fun LandingScreen(
 }
 
 @Composable
-fun ClipSyncTitle() {
+fun OTPSyncTitle() {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
     val heightScale = screenHeight.value / 915f
@@ -165,7 +165,7 @@ fun ClipSyncTitle() {
     ) {
         // Blur / Glow Layer (Behind)
         Text(
-            text = "ClipSync",
+            text = "OTPSync",
             fontSize = titleFontSize,
             fontFamily = FontFamily(Font(R.font.roboto_bold)),
             fontWeight = FontWeight.Bold,
@@ -192,7 +192,7 @@ fun ClipSyncTitle() {
 
         // Main Text (Front)
         Text(
-            text = "ClipSync",
+            text = "OTPSync",
             fontSize = titleFontSize,
             fontFamily = FontFamily(Font(R.font.roboto_bold)),
             fontWeight = FontWeight.Bold,

@@ -1,4 +1,4 @@
-# ClipSync: Firebase to Convex Migration Specification
+# OTPSync: Firebase to Convex Migration Specification
 
 **Version:** 1.0  
 **Date:** January 31, 2026  
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-This document specifies the complete migration of ClipSync from Firebase (Firestore) to Convex as the backend-as-a-service platform. ClipSync is a cross-platform clipboard synchronization app between macOS and Android devices, featuring end-to-end AES-256-GCM encryption.
+This document specifies the complete migration of OTPSync from Firebase (Firestore) to Convex as the backend-as-a-service platform. OTPSync is a cross-platform clipboard synchronization app between macOS and Android devices, featuring end-to-end AES-256-GCM encryption.
 
 ---
 
@@ -415,7 +415,7 @@ dependencies: [
 ```swift
 //
 // ConvexManager.swift
-// ClipSync - Convex Backend
+// OTPSync - Convex Backend
 //
 
 import Foundation
@@ -1087,13 +1087,13 @@ Before testing, ensure:
 ### Test 1: Initial Pairing
 
 **macOS:**
-1. Launch ClipSync on Mac
+1. Launch OTPSync on Mac
 2. Verify the landing/pairing screen appears
 3. Confirm QR code is displayed
 4. Note the QR code contains JSON with `macId`, `deviceName`, and `secret`
 
 **Android:**
-1. Launch ClipSync on Android
+1. Launch OTPSync on Android
 2. Grant required permissions (Accessibility, etc.)
 3. Tap "Scan QR Code"
 4. Scan the QR code from Mac
@@ -1118,7 +1118,7 @@ Before testing, ensure:
 **Expected Results:**
 - [ ] Android notification appears with clipboard content
 - [ ] Pasting on Android shows the Mac text
-- [ ] ClipSync history shows the synced item
+- [ ] OTPSync history shows the synced item
 
 ### Test 3: Android to Mac Clipboard Sync
 
@@ -1134,7 +1134,7 @@ Before testing, ensure:
 
 **Expected Results:**
 - [ ] Pasted text matches Android clipboard
-- [ ] ClipSync menubar shows sync activity
+- [ ] OTPSync menubar shows sync activity
 - [ ] History updated
 
 ### Test 4: Encryption Verification
@@ -1175,7 +1175,7 @@ Before testing, ensure:
 ### Test 7: Unpair Flow
 
 **Android:**
-1. Open ClipSync settings
+1. Open OTPSync settings
 2. Tap "Unpair" or "Disconnect"
 
 **Expected Results:**
@@ -1200,7 +1200,7 @@ Before testing, ensure:
 
 **Android:**
 1. Pair devices
-2. Minimize ClipSync (don't kill)
+2. Minimize OTPSync (don't kill)
 3. Copy text on Mac
 
 **Expected Results:**

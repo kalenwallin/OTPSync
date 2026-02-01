@@ -1,6 +1,6 @@
 //
 // LandingScreen.swift
-// ClipSync - AESTHETIC ANIMATED VERSION
+// OTPSync - AESTHETIC ANIMATED VERSION
 //
 // Created by Bhanu Gothwal on 21/09/25.
 

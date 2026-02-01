@@ -1,6 +1,6 @@
 //
 // SplashScreen.swift
-// ClipSync
+// OTPSync
 //
 
 import SwiftUI

@@ -1,4 +1,4 @@
-![Clipsync logo](mac/ClipSync/Assets.xcassets/AppIcon.appiconset/Readme-logo.png)
+![OTPSync logo](mac/ClipSync/Assets.xcassets/AppIcon.appiconset/Readme-logo.png)
 
 # OTPSync: Seamless Universal Clipboard
 

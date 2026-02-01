@@ -1,6 +1,6 @@
 //
 // MenuBarView.swift
-// ClipSync
+// OTPSync
 //
 // Elegant Redesign
 //
