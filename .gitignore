@@ -55,8 +55,6 @@ google-services.json
 GoogleService-Info.plist
 **/google-services.json
 **/GoogleService-Info.plist
-RegionConfig.swift
-RegionConfig.kt
 Secrets.swift
 Secrets.kt
 
@@ -64,3 +62,10 @@ Secrets.kt
 *.zip
 *.tar
 *.gz
+
+.env.local
+
+node_modules/
+
+# Convex generated files
+convex/_generated/

@@ -18,29 +18,6 @@ object DeviceManager {
     private const val KEY_ANDROID_DEVICE_NAME = "android_device_name"
     private const val KEY_SYNC_TO_MAC = "sync_to_mac"
     private const val KEY_SYNC_FROM_MAC = "sync_from_mac"
-    private const val KEY_REGION = "server_region" // "IN" or "US"
-
-    // Track the region the app was ACTUALLY initialized with at startup
-    var initializedRegion: String = "IN" 
-
-    fun getTargetRegion(context: Context): String {
-        return getPrefs(context).getString(KEY_REGION, "IN") ?: "IN"
-    }
-
-    fun isRegionSet(context: Context): Boolean {
-        return getPrefs(context).contains(KEY_REGION)
-    }
-
-    fun setTargetRegion(context: Context, region: String) {
-        val normalizedRegion = region.uppercase()
-        // Only saving if different to avoid redundant writes, 
-        // but for initial setup we might want to force save.
-        if (normalizedRegion != getTargetRegion(context)) {
-            // Must use commit() here because we might kill the process immediately after 
-            // for a region switch restart. apply() is async and might get cut off.
-            getPrefs(context).edit().putString(KEY_REGION, normalizedRegion).commit()
-        }
-    }
 
     private fun getPrefs(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -119,8 +96,9 @@ object DeviceManager {
 
     // Dynamic Encryption Key
     fun getEncryptionKey(context: Context): String {
+        // Key is set during QR pairing - no fallback needed
         return getPrefs(context).getString(KEY_ENCRYPTION_KEY, null) 
-            ?: Secrets.FALLBACK_ENCRYPTION_KEY // Legacy Fallback
+            ?: "" // Empty means not paired yet
     }
 
     fun saveEncryptionKey(context: Context, key: String) {

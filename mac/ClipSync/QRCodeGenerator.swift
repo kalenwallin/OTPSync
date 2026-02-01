@@ -27,19 +27,16 @@ class QRCodeGenerator: ObservableObject {
     }
     
     // --- Encryption Handshake ---
-    // Encrypts Mac Identity + Region + Secret into a QR payload
+    // Creates QR payload with Mac Identity + Secret for pairing
     func generateQRCode() {
         let macDeviceId = DeviceManager.shared.getDeviceId()
-        
-        // Format: JSON string
         let macName = DeviceManager.shared.getMacName()
-        let currentRegion = UserDefaults.standard.string(forKey: "server_region") ?? "IN"
         
+        // QR payload: macId, deviceName, and encryption secret
         let jsonDict: [String: String] = [
             "macId": macDeviceId,
             "deviceName": macName,
-            "server": currentRegion, //  Tell Phone which server to use
-            "secret": sharedSecretHex //  Send Dynamic Key
+            "secret": sharedSecretHex
         ]
         
         var plainTextData: Data?
@@ -47,7 +44,7 @@ class QRCodeGenerator: ObservableObject {
             plainTextData = jsonData
         } else {
              // Fallback manual JSON
-             let jsonString = "{\"macId\":\"\(macDeviceId)\",\"deviceName\":\"\(macName)\",\"server\":\"\(currentRegion)\",\"secret\":\"\(sharedSecretHex)\"}"
+             let jsonString = "{\"macId\":\"\(macDeviceId)\",\"deviceName\":\"\(macName)\",\"secret\":\"\(sharedSecretHex)\"}"
              plainTextData = jsonString.data(using: .utf8)
         }
         

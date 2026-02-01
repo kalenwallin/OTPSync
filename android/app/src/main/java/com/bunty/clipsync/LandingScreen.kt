@@ -77,35 +77,8 @@ fun LandingScreen(
     var showSubtitle by remember { mutableStateOf(false) }
     var showCard by remember { mutableStateOf(false) }
 
+    // --- Entrance Animations ---
     LaunchedEffect(Unit) {
-        delay(100)
-        showTitle = true
-        delay(200)
-        showSubtitle = true
-        delay(200)
-        showCard = true
-    }
-
-    // --- Region Auto-Detection ---
-    // Checks IP location on first launch to route EU users to US servers (Lower Latency)
-    // Fallback: India (IN) for rest of world
-    val context = LocalContext.current
-    LaunchedEffect(Unit) {
-        if (!DeviceManager.isRegionSet(context)) {
-            val countryCode = LocationHelper.detectCountryCode() ?: "IN" // Default to IN if null
-            
-            // European Countries (Better latency to US than IN)
-            val euCountries = setOf("ES", "FR", "DE", "IT", "UK", "GB", "NL", "BE", "SE", "NO", "DK", "FI", "IE", "PT", "GR", "AT", "CH", "PL", "CZ", "HU", "RO")
-            
-            if (countryCode == "US" || euCountries.contains(countryCode)) {
-                DeviceManager.setTargetRegion(context, "US")
-                Log.d("LandingScreen", " Auto-detected US/EU Region ($countryCode) -> Using US Server")
-            } else {
-                DeviceManager.setTargetRegion(context, "IN")
-                Log.d("LandingScreen", " Auto-detected Region ($countryCode) -> Using IN Server")
-            }
-        }
-
         delay(100)
         showTitle = true
         delay(200)

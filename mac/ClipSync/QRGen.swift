@@ -1,6 +1,6 @@
 //
 // QRGenScreen.swift
-// ClipSync - Production Version with Country Selection
+// ClipSync - Simplified QR Code Generation
 //
 
 import Foundation
@@ -22,12 +22,6 @@ struct QRGenScreen: View {
     
     @State private var qrCardOpacity: Double = 0
     @State private var qrCardScale: CGFloat = 0.85
-    
-    // Country Selection
-    @State private var selectedCountry: String = ""
-    @State private var detectedCountry: String = ""
-    @State private var showCountryPicker: Bool = false
-    @State private var isDetecting: Bool = true
     
     // Backend managers
     @StateObject private var qrGenerator = QRCodeGenerator.shared
@@ -137,55 +131,8 @@ struct QRGenScreen: View {
                 .frame(width: 350)
                 .offset(y: 20)
                 
-                // RIGHT COLUMN: QR Card + Country Selector
+                // RIGHT COLUMN: QR Card
                 VStack(alignment: .center, spacing: 16) {
-                    // Country Selector Button
-                    Button(action: {
-                        showCountryPicker.toggle()
-                    }) {
-                        HStack(spacing: 8) {
-                            if isDetecting {
-                                ProgressView()
-                                    .scaleEffect(0.6)
-                                    .frame(width: 14, height: 14)
-                            } else {
-                                Image(systemName: "globe")
-                                    .font(.system(size: 14))
-                            }
-                            
-                            Text(selectedCountry.isEmpty ? "Detecting location..." : selectedCountry)
-                                .font(.custom("SF Pro", size: 14))
-                                .fontWeight(.medium)
-                                .lineLimit(1)
-                            
-                            if !isDetecting {
-                                Image(systemName: "chevron.down")
-                                    .font(.system(size: 10))
-                            }
-                        }
-                        .foregroundColor(Color(red: 0.125, green: 0.263, blue: 0.600))
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .frame(minWidth: 170)
-                        .background(
-                            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                                .fill(Color.white.opacity(0.5))
-                        )
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(isDetecting)
-                    .popover(isPresented: $showCountryPicker) {
-                        CountryPickerView(
-                            selectedCountry: $selectedCountry,
-                            detectedCountry: detectedCountry,
-                            onSelect: { country in
-                                selectedCountry = country
-                                showCountryPicker = false
-                                updateServerRegion(for: country)
-                            }
-                        )
-                    }
-                    
                     // QR Card
                     ZStack {
                         RoundedRectangle(cornerRadius: 28, style: .continuous)
@@ -220,26 +167,6 @@ struct QRGenScreen: View {
                     .frame(width: 170, height: 210)
                     .opacity(qrCardOpacity)
                     .scaleEffect(qrCardScale)
-                    
-                    // Server indicator
-                    if !selectedCountry.isEmpty && !isDetecting {
-                        HStack(spacing: 6) {
-                            Circle()
-                                .fill(Color.green)
-                                .frame(width: 6, height: 6)
-                            
-                            let region = UserDefaults.standard.string(forKey: "server_region") ?? "IN"
-                            Text("Connected to \(region == "US" ? "🇺🇸 US" : "🇮🇳 India") server")
-                                .font(.custom("SF Pro", size: 11))
-                                .foregroundColor(.white.opacity(0.8))
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(
-                            Capsule()
-                                .fill(Color.black.opacity(0.3))
-                        )
-                    }
                 }
                 .frame(width: 170)
                 .offset(y: 60)
@@ -268,9 +195,13 @@ struct QRGenScreen: View {
         }
         .frame(width: 590, height: 590)
         .onAppear {
-            detectAndSetupRegion()
+            // Generate QR code
+            qrGenerator.generateQRCode()
+            
+            // Start listening for pairing
             let macDeviceId = DeviceManager.shared.getDeviceId()
             pairingManager.listenForPairing(macDeviceId: macDeviceId)
+            
             playEntranceAnimations()
         }
         .onChange(of: pairingManager.isPaired) { oldValue, newValue in
@@ -283,151 +214,6 @@ struct QRGenScreen: View {
             ConnectedScreen()
         }
         .enableInjection()
-    }
-    
-    // MARK: - Region Detection & Setup
-    private func detectAndSetupRegion() {
-        // 1. Check for previously saved selection to prevent Loop
-        if let savedCountry = UserDefaults.standard.string(forKey: "selected_country_name") {
-            print("💾 Found saved country preference: \(savedCountry). Skipping auto-detect.")
-            self.selectedCountry = savedCountry
-            self.detectedCountry = savedCountry // Treat saved as detected
-            self.isDetecting = false
-            
-            // Ensure server_region matches the country (healing self-state)
-            self.updateServerRegion(for: savedCountry)
-            return
-        }
-        
-        // 2. No saved preference? Run Auto-Detect (First Launch)
-        isDetecting = true
-        
-        // Try to detect user's country via IP
-        LocationHelper.shared.detectRegion { countryCode in
-            DispatchQueue.main.async {
-                self.isDetecting = false
-                
-                // Map country code to full name
-                if let countryCode = countryCode {
-                    let countryName = self.findCountryName(from: countryCode)
-                    self.detectedCountry = countryName
-                    self.selectedCountry = countryName
-                    
-                    print("🌍 Detected: \(countryName) (\(countryCode))")
-                    
-                    // Set server region (saves to defaults)
-                    self.updateServerRegion(for: countryName)
-                } else {
-                    // Fallback to India if detection fails
-                    print("⚠️ Location detection failed, defaulting to India")
-                    self.selectedCountry = "India"
-                    self.detectedCountry = "India"
-                    self.updateServerRegion(for: "India")
-                }
-            }
-        }
-    }
-    
-    private func findCountryName(from code: String) -> String {
-        let codeToName: [String: String] = [
-            // Americas
-            "US": "United States", "CA": "Canada", "MX": "Mexico", "BR": "Brazil",
-            "AR": "Argentina", "CL": "Chile", "CO": "Colombia", "PE": "Peru",
-            "VE": "Venezuela", "EC": "Ecuador", "UY": "Uruguay", "CR": "Costa Rica",
-            "PA": "Panama", "GT": "Guatemala", "CU": "Cuba", "DO": "Dominican Republic",
-            "HN": "Honduras", "NI": "Nicaragua", "SV": "El Salvador", "PY": "Paraguay",
-            "BO": "Bolivia", "JM": "Jamaica", "TT": "Trinidad and Tobago",
-            
-            // Europe
-            "GB": "United Kingdom", "UK": "United Kingdom", "DE": "Germany",
-            "FR": "France", "IT": "Italy", "ES": "Spain", "NL": "Netherlands",
-            "SE": "Sweden", "NO": "Norway", "DK": "Denmark", "FI": "Finland",
-            "BE": "Belgium", "AT": "Austria", "CH": "Switzerland", "IE": "Ireland",
-            "PT": "Portugal", "PL": "Poland", "GR": "Greece", "CZ": "Czech Republic",
-            "HU": "Hungary", "RO": "Romania", "BG": "Bulgaria", "HR": "Croatia",
-            "RS": "Serbia", "UA": "Ukraine", "SK": "Slovakia", "SI": "Slovenia",
-            "EE": "Estonia", "LV": "Latvia", "LT": "Lithuania", "IS": "Iceland",
-            "LU": "Luxembourg", "CY": "Cyprus", "MT": "Malta", "BA": "Bosnia and Herzegovina",
-            "AL": "Albania", "MK": "North Macedonia", "ME": "Montenegro", "MD": "Moldova",
-            "BY": "Belarus",
-            
-            // Asia
-            "IN": "India", "CN": "China", "JP": "Japan", "KR": "South Korea",
-            "SG": "Singapore", "TH": "Thailand", "MY": "Malaysia", "VN": "Vietnam",
-            "PH": "Philippines", "ID": "Indonesia", "PK": "Pakistan", "BD": "Bangladesh",
-            "LK": "Sri Lanka", "MM": "Myanmar", "KH": "Cambodia", "LA": "Laos",
-            "HK": "Hong Kong", "TW": "Taiwan", "NP": "Nepal", "BT": "Bhutan",
-            "AF": "Afghanistan", "MN": "Mongolia", "BN": "Brunei", "MO": "Macao",
-            "MV": "Maldives", "TL": "Timor-Leste",
-            
-            // Oceania
-            "AU": "Australia", "NZ": "New Zealand", "PG": "Papua New Guinea",
-            "FJ": "Fiji", "SB": "Solomon Islands", "WS": "Samoa", "TO": "Tonga",
-            "VU": "Vanuatu",
-            
-            // Middle East
-            "AE": "United Arab Emirates", "SA": "Saudi Arabia", "QA": "Qatar",
-            "KW": "Kuwait", "OM": "Oman", "BH": "Bahrain", "JO": "Jordan",
-            "LB": "Lebanon", "IR": "Iran", "IQ": "Iraq", "YE": "Yemen",
-            "SY": "Syria", "TR": "Turkey", "IL": "Israel",
-            
-            // Africa
-            "ZA": "South Africa", "EG": "Egypt", "NG": "Nigeria", "KE": "Kenya",
-            "MA": "Morocco", "DZ": "Algeria", "TN": "Tunisia", "LY": "Libya",
-            "GH": "Ghana", "ET": "Ethiopia", "TZ": "Tanzania", "UG": "Uganda",
-            "AO": "Angola", "MZ": "Mozambique", "ZW": "Zimbabwe", "ZM": "Zambia",
-            "SN": "Senegal", "CI": "Ivory Coast", "CM": "Cameroon", "BW": "Botswana",
-            "NA": "Namibia", "MU": "Mauritius", "RW": "Rwanda", "MW": "Malawi",
-            "MG": "Madagascar", "ML": "Mali", "BF": "Burkina Faso", "NE": "Niger",
-            "TD": "Chad", "CG": "Congo", "CD": "Democratic Republic of the Congo",
-            "SD": "Sudan",
-            
-            // Central Asia
-            "RU": "Russia", "KZ": "Kazakhstan", "UZ": "Uzbekistan",
-            "TM": "Turkmenistan", "KG": "Kyrgyzstan", "TJ": "Tajikistan",
-            "AZ": "Azerbaijan", "AM": "Armenia", "GE": "Georgia"
-        ]
-        
-        return codeToName[code] ?? "India" // Default fallback
-    }
-    
-    private func updateServerRegion(for country: String) {
-        // Get optimal server for this country
-        let newRegion = RegionConfig.getOptimalServer(for: country)
-        
-        // Check current region (what the app is actually running on)
-        let currentRegion = UserDefaults.standard.string(forKey: "server_region") ?? "IN"
-        
-        print("🌍 Country: \(country) → Server: \(newRegion) (Current: \(currentRegion))")
-        
-        // ALWAYS Save the user's selected country name so we remember it on restart
-        UserDefaults.standard.set(country, forKey: "selected_country_name")
-        
-        if newRegion != currentRegion {
-            print("⚠️ Region changed! Restarting app to apply...")
-            
-            // Save new region
-            UserDefaults.standard.set(newRegion, forKey: "server_region")
-            UserDefaults.standard.synchronize() // Force save
-            
-            // Restart App
-            restartApp()
-        } else {
-            // Just update UI if region matches (e.g. India -> Sri Lanka is still IN)
-            qrGenerator.generateQRCode()
-        }
-    }
-    
-    private func restartApp() {
-        let url = URL(fileURLWithPath: Bundle.main.bundlePath)
-        let config = NSWorkspace.OpenConfiguration()
-        config.activates = true
-        
-        NSWorkspace.shared.openApplication(at: url, configuration: config) { _, _ in
-            DispatchQueue.main.async {
-                NSApp.terminate(nil)
-            }
-        }
     }
     
     // MARK: - Animation Functions
@@ -469,118 +255,7 @@ struct QRGenScreen: View {
     }
 }
 
-// MARK: - Country Picker View
-struct CountryPickerView: View {
-    @Binding var selectedCountry: String
-    let detectedCountry: String
-    let onSelect: (String) -> Void
-    
-    @State private var searchText = ""
-    
-    var filteredCountries: [String] {
-        let countries = RegionConfig.sortedCountryNames
-        if searchText.isEmpty {
-            return countries
-        }
-        return countries.filter { $0.localizedCaseInsensitiveContains(searchText) }
-    }
-    
-    var body: some View {
-        VStack(spacing: 0) {
-            // Header
-            HStack {
-                Text("Select Your Country")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.primary)
-                
-                Spacer()
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(Color(NSColor.controlBackgroundColor))
-            
-            Divider()
-            
-            // Search bar
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundColor(.secondary)
-                TextField("Search countries...", text: $searchText)
-                    .textFieldStyle(.plain)
-                
-                if !searchText.isEmpty {
-                    Button(action: { searchText = "" }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.secondary)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(8)
-            .background(Color(NSColor.textBackgroundColor))
-            .cornerRadius(8)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            
-            // Country list
-            ScrollView {
-                LazyVStack(spacing: 0) {
-                    ForEach(filteredCountries, id: \.self) { country in
-                        Button(action: {
-                            onSelect(country)
-                        }) {
-                            HStack {
-                                Text(country)
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.primary)
-                                
-                                Spacer()
-                                
-                                if country == detectedCountry {
-                                    Text("Auto-detected")
-                                        .font(.system(size: 11))
-                                        .foregroundColor(.secondary)
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 3)
-                                        .background(Color.blue.opacity(0.1))
-                                        .cornerRadius(6)
-                                }
-                                
-                                if country == selectedCountry {
-                                    Image(systemName: "checkmark")
-                                        .foregroundColor(.blue)
-                                        .font(.system(size: 14, weight: .semibold))
-                                }
-                                
-                                // Show server indicator
-                                let server = RegionConfig.getOptimalServer(for: country)
-                                Text(server == "US" ? "🇺🇸" : "🇮🇳")
-                                    .font(.system(size: 14))
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 10)
-                            .background(
-                                country == selectedCountry ?
-                                Color.blue.opacity(0.1) :
-                                Color.clear
-                            )
-                        }
-                        .buttonStyle(.plain)
-                        
-                        if country != filteredCountries.last {
-                            Divider()
-                                .padding(.leading, 16)
-                        }
-                    }
-                }
-            }
-            .frame(maxHeight: 350)
-        }
-        .frame(width: 340)
-        .background(Color(NSColor.windowBackgroundColor))
-    }
-}
-
+// MARK: - Number Circle View
 private struct NumberCircleView: View {
     let number: String
     #if DEBUG
