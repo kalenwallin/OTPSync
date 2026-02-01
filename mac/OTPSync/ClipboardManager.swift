@@ -236,11 +236,14 @@ class ClipboardManager: ObservableObject {
                 // Duplicate Check
                 guard content != self.lastCopiedText else { return }
 
+                // Set lastCopiedText BEFORE writing to pasteboard to prevent race condition
+                // where processClipboardChange() runs before we update lastCopiedText
+                self.lastCopiedText = content
+
                 // Ignore next 2 changes: clearContents() and setString() each trigger a change
                 self.ignoreChangeCount = 2
                 self.pasteboard.clearContents()
                 self.pasteboard.setString(content, forType: .string)
-                self.lastCopiedText = content
 
                 let deviceName = PairingManager.shared.pairedDeviceName
 
