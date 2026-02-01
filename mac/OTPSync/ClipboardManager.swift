@@ -27,10 +27,16 @@ class ClipboardManager: ObservableObject {
     private var sessionStartDate: Date = Date()
 
     var syncToMac: Bool {
-        UserDefaults.standard.bool(forKey: "syncToMac")
+        // Read directly from UserDefaults each time to ensure fresh value
+        let value = UserDefaults.standard.bool(forKey: "syncToMac")
+        return value
     }
     var syncFromMac: Bool {
-        UserDefaults.standard.bool(forKey: "syncFromMac")
+        // Read directly from UserDefaults each time to ensure fresh value
+        // Note: UserDefaults.bool(forKey:) returns false if key doesn't exist,
+        // but we register defaults so this should always have a value
+        let value = UserDefaults.standard.bool(forKey: "syncFromMac")
+        return value
     }
 
     private let pasteboard = NSPasteboard.general
@@ -60,7 +66,13 @@ class ClipboardManager: ObservableObject {
     // Uses DispatchSourceTimer on a background queue to poll NSPasteboard changeCount.
     // This avoids main thread blocking and "App Nap" suspension issues.
     func startMonitoring() {
-        if isSyncPaused { return }
+        print("🔄 Starting clipboard monitoring...")
+        print("   syncFromMac: \(syncFromMac), syncToMac: \(syncToMac), isSyncPaused: \(isSyncPaused)")
+        
+        if isSyncPaused { 
+            print("⏸️ Sync is paused, not starting monitoring")
+            return 
+        }
         stopMonitoring()
 
         lastChangeCount = pasteboard.changeCount
@@ -137,11 +149,15 @@ class ClipboardManager: ObservableObject {
         print("📋 New clipboard text detected: \(text.prefix(50))...")
         lastCopiedText = text
 
-        guard syncFromMac else {
-            print("⏭️ syncFromMac is disabled")
+        // Check sync setting - read fresh from UserDefaults
+        let syncEnabled = syncFromMac
+        print("🔄 syncFromMac setting: \(syncEnabled)")
+        guard syncEnabled else {
+            print("⏭️ syncFromMac is disabled - NOT syncing to Android")
             return
         }
 
+        print("✅ syncFromMac is enabled - syncing to Android")
         uploadClipboard(text: text)
 
         if let lastItem = self.history.first, lastItem.content == text {
