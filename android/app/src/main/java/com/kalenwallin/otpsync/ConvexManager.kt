@@ -11,9 +11,11 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.json.JSONObject
@@ -259,6 +261,50 @@ object ConvexManager {
         }
         
         return response["value"]?.jsonPrimitive?.content?.toBoolean() ?: false
+    }
+
+    // Query that returns a list of objects
+    suspend fun <T> queryList(
+        context: Context,
+        functionName: String,
+        args: Map<String, Any> = emptyMap(),
+        deserializer: (JsonObject) -> T
+    ): List<T> {
+        val body = buildJsonObject {
+            put("path", JsonPrimitive(functionName))
+            put("args", buildJsonObject {
+                args.forEach { (key, value) ->
+                    when (value) {
+                        is String -> put(key, JsonPrimitive(value))
+                        is Number -> put(key, JsonPrimitive(value))
+                        is Boolean -> put(key, JsonPrimitive(value))
+                    }
+                }
+            })
+            put("format", JsonPrimitive("json"))
+        }
+        
+        val response = httpPost(context, "query", body)
+        
+        val status = response["status"]?.jsonPrimitive?.content
+        if (status != "success") {
+            val errorMessage = response["errorMessage"]?.jsonPrimitive?.content ?: "Unknown error"
+            throw ConvexException(errorMessage)
+        }
+        
+        val value = response["value"]
+        if (value == null || value.toString() == "null" || value.toString() == "[]") {
+            return emptyList()
+        }
+        
+        return value.jsonArray.mapNotNull { element ->
+            try {
+                deserializer(element.jsonObject)
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to deserialize list item", e)
+                null
+            }
+        }
     }
 
     // --- Convex Mutation ---
@@ -568,6 +614,42 @@ object ConvexManager {
         } catch (e: Exception) {
             Log.e(TAG, "Failed to get latest clipboard", e)
             null
+        }
+    }
+
+    // Get clipboard history (list of recent clipboard items)
+    suspend fun getClipboardHistory(context: Context, limit: Int = 10): List<ConvexClipboardItem> {
+        val pairingId = DeviceManager.getPairingId(context) ?: return emptyList()
+        
+        return try {
+            queryList(
+                context,
+                "clipboard:getHistory",
+                mapOf("pairingId" to pairingId, "limit" to limit)
+            ) { jsonObj ->
+                val rawContent = jsonObj["content"]?.jsonPrimitive?.content ?: ""
+                val sourceDeviceId = jsonObj["sourceDeviceId"]?.jsonPrimitive?.content ?: ""
+                
+                // Decrypt content
+                val decryptedContent = try {
+                    decryptData(context, rawContent)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to decrypt clipboard content", e)
+                    rawContent
+                }
+                
+                ConvexClipboardItem(
+                    id = jsonObj["_id"]?.jsonPrimitive?.content ?: "",
+                    creationTime = jsonObj["_creationTime"]?.jsonPrimitive?.content?.toDoubleOrNull()?.toLong() ?: 0L,
+                    content = decryptedContent,
+                    pairingId = jsonObj["pairingId"]?.jsonPrimitive?.content ?: "",
+                    sourceDeviceId = sourceDeviceId,
+                    type = jsonObj["type"]?.jsonPrimitive?.content ?: "text"
+                )
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to get clipboard history", e)
+            emptyList()
         }
     }
 }

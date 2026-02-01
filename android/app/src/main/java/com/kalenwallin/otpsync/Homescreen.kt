@@ -108,6 +108,10 @@ fun Homescreen(
     var syncToMac by remember { mutableStateOf(DeviceManager.isSyncToMacEnabled(context)) }
     var syncFromMac by remember { mutableStateOf(DeviceManager.isSyncFromMacEnabled(context)) }
 
+    // Clipboard History State
+    var clipboardHistory by remember { mutableStateOf<List<ConvexClipboardItem>>(emptyList()) }
+    var isLoadingHistory by remember { mutableStateOf(false) }
+
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
 
     // Check permissions function
@@ -118,11 +122,26 @@ fun Homescreen(
         isBatteryUnrestricted = pm.isIgnoringBatteryOptimizations(context.packageName)
     }
 
+    // Load clipboard history function
+    fun loadClipboardHistory() {
+        scope.launch {
+            isLoadingHistory = true
+            try {
+                clipboardHistory = ConvexManager.getClipboardHistory(context, limit = 10)
+            } catch (e: Exception) {
+                // Silently fail - history is not critical
+            } finally {
+                isLoadingHistory = false
+            }
+        }
+    }
+
     // Auto-refresh on Resume
     DisposableEffect(lifecycleOwner) {
         val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
             if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
                 checkPermissions()
+                loadClipboardHistory()
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -135,6 +154,7 @@ fun Homescreen(
         delay(100)
         showContent = true
         checkPermissions() // Initial check
+        loadClipboardHistory() // Load initial history
         
         // Check for updates
         scope.launch {
@@ -486,6 +506,66 @@ fun Homescreen(
                             }
                         }
                     }
+
+                    // --- Clipboard History ---
+                    Column {
+                        SectionHeader(text = "Clipboard History", fontFamily = robotoFontFamily, scale = scale)
+                        
+                        InnerWhiteCard(scale = scale) {
+                            Column(modifier = Modifier.padding((16 * scale).dp)) {
+                                if (isLoadingHistory) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = (24 * scale).dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = "Loading...",
+                                            fontFamily = robotoFontFamily,
+                                            fontSize = (14 * scale).coerceIn(12f, 14f).sp,
+                                            color = Color(0xFF3C3C43).copy(alpha = 0.6f)
+                                        )
+                                    }
+                                } else if (clipboardHistory.isEmpty()) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = (24 * scale).dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = "No clipboard history yet",
+                                            fontFamily = robotoFontFamily,
+                                            fontSize = (14 * scale).coerceIn(12f, 14f).sp,
+                                            color = Color(0xFF3C3C43).copy(alpha = 0.6f)
+                                        )
+                                    }
+                                } else {
+                                    clipboardHistory.forEachIndexed { index, item ->
+                                        ClipboardHistoryRow(
+                                            item = item,
+                                            deviceId = DeviceManager.getDeviceId(context),
+                                            fontFamily = robotoFontFamily,
+                                            scale = scale,
+                                            onCopy = {
+                                                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                                                val clip = android.content.ClipData.newPlainText("Copied Text", item.content)
+                                                clipboard.setPrimaryClip(clip)
+                                                Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+                                            }
+                                        )
+                                        if (index < clipboardHistory.size - 1) {
+                                            HorizontalDivider(
+                                                modifier = Modifier.padding(vertical = (8 * scale).dp),
+                                                color = Color(0xFFE5E5EA)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
             
@@ -697,6 +777,89 @@ fun ActionButton(text: String, icon: ImageVector, backgroundColor: Color, fontFa
                 color = backgroundColor // Text color matches the theme color
             )
         }
+    }
+}
+
+@Composable
+fun ClipboardHistoryRow(
+    item: ConvexClipboardItem,
+    deviceId: String,
+    fontFamily: FontFamily,
+    scale: Float = 1f,
+    onCopy: () -> Unit
+) {
+    val isFromThisDevice = item.sourceDeviceId == deviceId
+    val sourceLabel = if (isFromThisDevice) "From this device" else "From Mac"
+    val timeAgo = formatTimeAgo(item.creationTime)
+    
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) { onCopy() }
+            .padding(vertical = (4 * scale).dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Source indicator icon
+        Icon(
+            imageVector = if (isFromThisDevice) Icons.Default.Share else Icons.Default.Computer,
+            contentDescription = null,
+            tint = Color(0xFF007AFF),
+            modifier = Modifier.size((20 * scale).dp)
+        )
+        Spacer(modifier = Modifier.width((12 * scale).dp))
+        
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = item.content.take(50) + if (item.content.length > 50) "..." else "",
+                color = Color.Black,
+                fontSize = (14 * scale).coerceIn(12f, 14f).sp,
+                fontFamily = fontFamily,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1
+            )
+            Row {
+                Text(
+                    text = sourceLabel,
+                    color = Color(0xFF3C3C43).copy(alpha = 0.6f),
+                    fontSize = (11 * scale).coerceIn(10f, 11f).sp,
+                    fontFamily = fontFamily
+                )
+                Text(
+                    text = " • $timeAgo",
+                    color = Color(0xFF3C3C43).copy(alpha = 0.4f),
+                    fontSize = (11 * scale).coerceIn(10f, 11f).sp,
+                    fontFamily = fontFamily
+                )
+            }
+        }
+        
+        // Copy indicator
+        Text(
+            text = "Tap to copy",
+            color = Color(0xFF007AFF).copy(alpha = 0.7f),
+            fontSize = (11 * scale).coerceIn(10f, 11f).sp,
+            fontFamily = fontFamily
+        )
+    }
+}
+
+private fun formatTimeAgo(creationTime: Long): String {
+    val now = System.currentTimeMillis()
+    val diffMs = now - creationTime
+    val diffSeconds = diffMs / 1000
+    val diffMinutes = diffSeconds / 60
+    val diffHours = diffMinutes / 60
+    val diffDays = diffHours / 24
+    
+    return when {
+        diffSeconds < 60 -> "Just now"
+        diffMinutes < 60 -> "${diffMinutes}m ago"
+        diffHours < 24 -> "${diffHours}h ago"
+        diffDays < 7 -> "${diffDays}d ago"
+        else -> "${diffDays / 7}w ago"
     }
 }
 
