@@ -12,14 +12,14 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		BF1CFB822E887C7500B7A454 /* ClipSync.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ClipSync.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BF1CFB822E887C7500B7A454 /* OTPSync.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OTPSync.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF94DD432EF29B7F0034A1B9 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		BF1CFB842E887C7500B7A454 /* ClipSync */ = {
+		BF1CFB842E887C7500B7A454 /* OTPSync */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = ClipSync;
+			path = OTPSync;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -40,7 +40,7 @@
 		BF1CFB792E887C7500B7A454 = {
 			isa = PBXGroup;
 			children = (
-				BF1CFB842E887C7500B7A454 /* ClipSync */,
+				BF1CFB842E887C7500B7A454 /* OTPSync */,
 				BF1CFB832E887C7500B7A454 /* Products */,
 				BF94DD422EF29B7F0034A1B9 /* Frameworks */,
 			);
@@ -49,7 +49,7 @@
 		BF1CFB832E887C7500B7A454 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				BF1CFB822E887C7500B7A454 /* ClipSync.app */,
+				BF1CFB822E887C7500B7A454 /* OTPSync.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -65,9 +65,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		BF1CFB812E887C7500B7A454 /* ClipSync */ = {
+		BF1CFB812E887C7500B7A454 /* OTPSync */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = BF1CFB8D2E887C7700B7A454 /* Build configuration list for PBXNativeTarget "ClipSync" */;
+			buildConfigurationList = BF1CFB8D2E887C7700B7A454 /* Build configuration list for PBXNativeTarget "OTPSync" */;
 			buildPhases = (
 				BF1CFB7E2E887C7500B7A454 /* Sources */,
 				BF1CFB7F2E887C7500B7A454 /* Frameworks */,
@@ -78,14 +78,14 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				BF1CFB842E887C7500B7A454 /* ClipSync */,
+				BF1CFB842E887C7500B7A454 /* OTPSync */,
 			);
-			name = ClipSync;
+			name = OTPSync;
 			packageProductDependencies = (
 				BFF6982B2EFD70300037416F /* Lottie */,
 			);
-			productName = ClipSync;
-			productReference = BF1CFB822E887C7500B7A454 /* ClipSync.app */;
+			productName = OTPSync;
+			productReference = BF1CFB822E887C7500B7A454 /* OTPSync.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -103,7 +103,7 @@
 					};
 				};
 			};
-			buildConfigurationList = BF1CFB7D2E887C7500B7A454 /* Build configuration list for PBXProject "ClipSync" */;
+			buildConfigurationList = BF1CFB7D2E887C7500B7A454 /* Build configuration list for PBXProject "OTPSync" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -120,7 +120,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				BF1CFB812E887C7500B7A454 /* ClipSync */,
+				BF1CFB812E887C7500B7A454 /* OTPSync */,
 			);
 		};
 /* End PBXProject section */
@@ -274,7 +274,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				AUTOMATION_APPLE_EVENTS = NO;
-				CODE_SIGN_ENTITLEMENTS = ClipSync/ClipSync.entitlements;
+				CODE_SIGN_ENTITLEMENTS = OTPSync/OTPSync.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Manual;
@@ -326,7 +326,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				AUTOMATION_APPLE_EVENTS = NO;
-				CODE_SIGN_ENTITLEMENTS = ClipSync/ClipSync.entitlements;
+				CODE_SIGN_ENTITLEMENTS = OTPSync/OTPSync.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Manual;
@@ -372,7 +372,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		BF1CFB7D2E887C7500B7A454 /* Build configuration list for PBXProject "ClipSync" */ = {
+		BF1CFB7D2E887C7500B7A454 /* Build configuration list for PBXProject "OTPSync" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BF1CFB8B2E887C7700B7A454 /* Debug */,
@@ -381,7 +381,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		BF1CFB8D2E887C7700B7A454 /* Build configuration list for PBXNativeTarget "ClipSync" */ = {
+		BF1CFB8D2E887C7700B7A454 /* Build configuration list for PBXNativeTarget "OTPSync" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BF1CFB8E2E887C7700B7A454 /* Debug */,

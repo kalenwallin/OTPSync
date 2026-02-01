@@ -1,6 +1,6 @@
 //
 // QRGenScreen.swift
-// ClipSync - Simplified QR Code Generation
+// OTPSync - Simplified QR Code Generation
 //
 
 import Foundation

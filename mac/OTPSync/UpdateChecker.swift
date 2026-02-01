@@ -17,7 +17,7 @@ class UpdateChecker: ObservableObject {
 
     // --- GitHub API Config ---
     private let repoOwner = "WinShell-Bhanu"
-    private let repoName = "Clipsync"
+    private let repoName = "OTPSync"
     private let currentVersion = "1.0.0"
 
     // --- Update Check Logic ---

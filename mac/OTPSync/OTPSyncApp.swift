@@ -2,13 +2,13 @@ import AppKit
 import Combine
 import IOKit.pwr_mgt
 //
-// ClipSyncApp.swift
-// ClipSync
+// OTPSyncApp.swift
+// OTPSync
 //
 import SwiftUI
 
 @main
-struct ClipSyncApp: App {
+struct OTPSyncApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @ObservedObject private var pairingManager = PairingManager.shared
 

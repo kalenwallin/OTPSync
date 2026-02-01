@@ -1,6 +1,6 @@
 //
 // DeviceManager.swift
-// ClipSync
+// OTPSync
 //
 
 import Foundation

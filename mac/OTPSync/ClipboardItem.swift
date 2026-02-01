@@ -1,6 +1,6 @@
 // 
 // ClipboardItem.swift
-// ClipSync
+// OTPSync
 //
 
 import Foundation

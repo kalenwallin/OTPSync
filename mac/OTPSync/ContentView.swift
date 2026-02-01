@@ -1,6 +1,6 @@
 //
 // ContentView.swift
-// ClipSync
+// OTPSync
 //
 
 import SwiftUI

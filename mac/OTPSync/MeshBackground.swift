@@ -1,6 +1,6 @@
 //
 // MeshBackground.swift
-// ClipSync
+// OTPSync
 //
 
 import SwiftUI

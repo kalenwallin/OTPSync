@@ -1,4 +1,4 @@
-![OTPSync logo](android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png)
+![OTPSync logo](mac/OTPSync/Assets.xcassets/AppIcon.appiconset/icon-mac-128x128@2x.png)
 
 # OTPSync: Seamless Universal Clipboard
 
@@ -24,13 +24,13 @@
 * **Language**: Swift 5.9
 * **Framework**: SwiftUI & AppKit
 * **Architecture**: MVVM
-* **Dependencies**: Firebase, Lottie
+* **Dependencies**: Convex, Lottie
 
 ### Android App
 * **Language**: Kotlin
 * **Framework**: Jetpack Compose, Material 3
 * **Architecture**: MVVM / Clean Architecture
-* **Dependencies**: Firebase, Coroutines, Hilt
+* **Dependencies**: Convex, Coroutines, Hilt
 
 ---
 
@@ -148,7 +148,7 @@ cd android
 
 1. Open the project in Xcode:
    ```bash
-   open mac/ClipSync.xcodeproj
+   open mac/OTPSync.xcodeproj
    ```
 2. Select your signing team in the project settings if needed
 3. Press **⌘B** to build or **⌘R** to build and run
@@ -158,13 +158,13 @@ cd android
 For a release build:
 ```bash
 cd mac
-xcodebuild -project ClipSync.xcodeproj -scheme ClipSync -configuration Release build
+xcodebuild -project OTPSync.xcodeproj -scheme OTPSync -configuration Release build
 ```
 
 For a debug build:
 ```bash
 cd mac
-xcodebuild -project ClipSync.xcodeproj -scheme ClipSync -configuration Debug build
+xcodebuild -project OTPSync.xcodeproj -scheme OTPSync -configuration Debug build
 ```
 
 ---
@@ -172,3 +172,10 @@ xcodebuild -project ClipSync.xcodeproj -scheme ClipSync -configuration Debug bui
 ## 📜 License
 
 Distributed under the **MIT License**. See `LICENSE` for more information.
+
+---
+
+Forked from WinShell-Bhanu/Clipsync on Jan 31, 2026. 
+- Replaced Firebase with Convex
+- Rebranded from Clipsync to OTPSync for a focus on copying OTPs from Android to MacOS automatically.
+- Removed unused features

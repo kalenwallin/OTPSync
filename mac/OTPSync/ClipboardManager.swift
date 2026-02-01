@@ -1,6 +1,6 @@
 //
 // ClipboardManager.swift
-// ClipSync - Convex Backend
+// OTPSync - Convex Backend
 //
 
 import AppKit

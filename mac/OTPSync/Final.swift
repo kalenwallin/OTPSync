@@ -1,6 +1,6 @@
 //
 // Final.swift
-// ClipSync
+// OTPSync
 // Created by Bhanu Gothwal on 28/09/25
 //
 
