@@ -1,10 +1,9 @@
 //
 // PairingManager.swift
-// ClipSync
+// ClipSync - Convex Backend
 //
 
 import Foundation
-import FirebaseFirestore
 import Combine
 
 class PairingManager: ObservableObject {
@@ -14,15 +13,15 @@ class PairingManager: ObservableObject {
     @Published var pairedDeviceName: String = UserDefaults.standard.string(forKey: "paired_device_name") ?? ""
     @Published var pairingId: String? = UserDefaults.standard.string(forKey: "current_pairing_id")
     @Published var isSetupComplete: Bool = UserDefaults.standard.bool(forKey: "is_setup_complete")
-    @Published var pairingError: String? = nil // NEW: For displaying errors to user
+    @Published var pairingError: String? = nil
     
-    private var pairingListener: ListenerRegistration?
-    private var unpairingListener: ListenerRegistration?
-    private let db = FirebaseManager.shared.db
+    // Convex subscriptions
+    private var pairingSubscription: AnyCancellable?
+    private var unpairingSubscription: AnyCancellable?
     private var listenStartTime: Date?
     
     // --- Pairing Handshake ---
-    // Listens for a new document in 'pairings' collection with matching macId
+    // Polls for a new pairing in Convex with matching macId
     func listenForPairing(macDeviceId: String) {
         guard !isPaired else { return }
         
@@ -33,145 +32,115 @@ class PairingManager: ObservableObject {
         
         print("🎧 PairingManager: Start Check (MacID: \(macDeviceId))")
         
-        // No Auth required per user request
-        self.startFirestoreListener(macDeviceId: macDeviceId)
+        startConvexPairingListener(macDeviceId: macDeviceId)
     }
     
-    private func startFirestoreListener(macDeviceId: String) {
+    private func startConvexPairingListener(macDeviceId: String) {
+        let sinceTimestamp = (listenStartTime?.timeIntervalSince1970 ?? 0) * 1000
         
-        // Query pairings collection where macId matches
-        pairingListener = db.collection("pairings")
-            .whereField("macId", isEqualTo: macDeviceId)
-            .addSnapshotListener { [weak self] snapshot, error in
-                guard let self = self else { return }
-                
-                if let error = error {
-                    print("❌ Pairing Listener Error: \(error.localizedDescription)")
-                    let nsError = error as NSError
-                    if nsError.code == 7 {
-                        DispatchQueue.main.async {
-                            self.pairingError = "Permission denied. Check Firestore rules."
-                        }
-                    } else if nsError.code == 14 {
-                        DispatchQueue.main.async {
-                            self.pairingError = "Network error. Check connection."
-                        }
-                    }
-                    return
+        pairingSubscription = ConvexManager.shared.subscribe(
+            to: "pairings:watchForPairing",
+            args: [
+                "macDeviceId": macDeviceId,
+                "sinceTimestamp": sinceTimestamp
+            ],
+            interval: 1.0,
+            type: ConvexPairing.self
+        )
+        .receive(on: DispatchQueue.main)
+        .sink(
+            receiveCompletion: { [weak self] completion in
+                if case .failure(let error) = completion {
+                    print("❌ Pairing subscription error: \(error)")
+                    self?.pairingError = "Connection error. Check network."
                 }
+            },
+            receiveValue: { [weak self] optionalPairing in
+                guard let self = self, let pairing = optionalPairing else { return }
                 
-                guard let documents = snapshot?.documents else { 
-                    print("⚠️ Pairing Snapshot is NIL")
-                    return 
-                }
+                // Found a valid pairing!
+                print("✅ Valid Pairing Found! (ID: \(pairing.documentId))")
                 
-                print("👀 Pairing Listener: Found \(documents.count) documents")
-                
-                if documents.isEmpty {
-                    return
-                }
-                
-                // Process snapshots
-
-                
-                // Find the most recent VALID pairing
-                self.processDocuments(documents)
+                self.processPairingData(pairing)
             }
+        )
     }
     
-    private func processDocuments(_ documents: [QueryDocumentSnapshot]) {
-        var validPairing: QueryDocumentSnapshot?
-        
-        for doc in documents {
-            let data = doc.data()
-            let docId = doc.documentID
-            
-            // Check if pairing has timestamp
-            guard let timestamp = data["timestamp"] as? Timestamp else {
-                print("⚠️ Doc \(docId) missing timestamp. Skipping.")
-                continue
-            }
-            
-            let pairingDate = timestamp.dateValue()
-            
-            // Only accept pairings created AFTER we started listening
-            if let startTime = self.listenStartTime {
-                if pairingDate > startTime {
-                    print("✅ Valid Pairing Found! (Date: \(pairingDate))")
-                    validPairing = doc
-                    break
-                } else {
-                    print("⏳ Ignoring old pairing \(docId) (Date: \(pairingDate) vs Start: \(startTime))")
-                }
-            }
-        }
-        
-        guard let pairingDoc = validPairing else {
-            return
-        }
-        
-        // Process the valid pairing
-        self.processPairingData(pairingDoc)
-    }
-    
-    private func processPairingData(_ doc: QueryDocumentSnapshot) {
-        let data = doc.data()
-        guard let androidDeviceName = data["androidDeviceName"] as? String else { return }
-        let pairingId = doc.documentID
-
+    private func processPairingData(_ pairing: ConvexPairing) {
         // Save State (Memory)
         DispatchQueue.main.async {
-            self.pairingId = pairingId
-            self.pairedDeviceName = androidDeviceName
+            self.pairingId = pairing.documentId
+            self.pairedDeviceName = pairing.androidDeviceName
             self.isPaired = true
             self.pairingError = nil
         }
         
         // Persistence (Disk)
-        UserDefaults.standard.set(pairingId, forKey: "current_pairing_id")
-        UserDefaults.standard.set(androidDeviceName, forKey: "paired_device_name")
+        UserDefaults.standard.set(pairing.documentId, forKey: "current_pairing_id")
+        UserDefaults.standard.set(pairing.androidDeviceName, forKey: "paired_device_name")
         
         // Start Unpair Watcher
-        self.startMonitoringPairingStatus(pairingId: pairingId)
+        self.startMonitoringPairingStatus(pairingId: pairing.documentId)
         
         // Cleanup Listener
-        self.pairingListener?.remove()
-        self.pairingListener = nil
+        self.pairingSubscription?.cancel()
+        self.pairingSubscription = nil
     }
     
     // --- Persistence & Restoration ---
     
     // Monitors for remote unpair (deletion of document)
     func startMonitoringPairingStatus(pairingId: String) {
-        unpairingListener?.remove()
-
-        unpairingListener = db.collection("pairings").document(pairingId)
-            .addSnapshotListener { [weak self] snapshot, error in
+        unpairingSubscription?.cancel()
+        
+        unpairingSubscription = ConvexManager.shared.subscribe(
+            to: "pairings:exists",
+            args: ["pairingId": pairingId],
+            interval: 2.0,
+            type: Bool.self
+        )
+        .receive(on: DispatchQueue.main)
+        .sink(
+            receiveCompletion: { _ in },
+            receiveValue: { [weak self] exists in
                 guard let self = self else { return }
                 
-                if error != nil { return }
-                
-                // If document is gone, we are unpaired
-                if let snapshot = snapshot, !snapshot.exists {
+                // If pairing no longer exists, unpair locally
+                if let exists = exists, !exists {
+                    print("⚠️ Pairing deleted remotely, unpairing...")
                     self.unpair()
                 }
             }
+        )
     }
     
     // Stop listening
     func stopListening() {
-        pairingListener?.remove()
-        pairingListener = nil
-        listenStartTime = nil
-        pairingListener?.remove()
-        pairingListener = nil
+        pairingSubscription?.cancel()
+        pairingSubscription = nil
         listenStartTime = nil
     }
     
     // Unpair device
     func unpair() {
-        unpairingListener?.remove()
-        unpairingListener = nil
+        // Cancel subscriptions
+        unpairingSubscription?.cancel()
+        unpairingSubscription = nil
+        
+        // Delete pairing from Convex
+        if let pairingId = pairingId {
+            Task {
+                do {
+                    try await ConvexManager.shared.mutationVoid(
+                        "pairings:remove",
+                        args: ["pairingId": pairingId]
+                    )
+                    print("✅ Pairing removed from Convex")
+                } catch {
+                    print("⚠️ Error removing pairing: \(error)")
+                }
+            }
+        }
         
         DispatchQueue.main.async {
             self.isPaired = false
@@ -187,8 +156,6 @@ class PairingManager: ObservableObject {
         
         ClipboardManager.shared.clearHistory()
         ClipboardManager.shared.stopMonitoring()
-        ClipboardManager.shared.stopListening()
-        
         ClipboardManager.shared.stopListening()
     }
     
@@ -221,9 +188,6 @@ class PairingManager: ObservableObject {
         DispatchQueue.main.async {
             self.isSetupComplete = true
         }
-        UserDefaults.standard.set(true, forKey: "is_setup_complete")
-        UserDefaults.standard.set(getCurrentBootTime(), forKey: "last_boot_time")
-        
         UserDefaults.standard.set(true, forKey: "is_setup_complete")
         UserDefaults.standard.set(getCurrentBootTime(), forKey: "last_boot_time")
     }
