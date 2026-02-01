@@ -14,6 +14,14 @@ class ClipboardManager: ObservableObject {
     @Published var history: [ClipboardItem] = []
     @Published var isSyncPaused: Bool = false
     @Published var lastSyncedTime: Date?
+    
+    // Sync Statistics
+    @Published var syncCountToday: Int = 0
+    @Published var syncCountSession: Int = 0
+    @Published var syncCountAllTime: Int = 0
+    
+    private let syncStatsKey = "syncStats"
+    private var sessionStartDate: Date = Date()
 
     var syncToMac: Bool {
         UserDefaults.standard.bool(forKey: "syncToMac")
@@ -40,6 +48,10 @@ class ClipboardManager: ObservableObject {
 
     private var isListenerActive = false
     private var lastListenerUpdate = Date()
+    
+    init() {
+        loadSyncStats()
+    }
 
     // --- Monitoring Strategy (Poller) ---
     // Uses DispatchSourceTimer on a background queue to poll NSPasteboard changeCount.
@@ -126,6 +138,7 @@ class ClipboardManager: ObservableObject {
             )
             self.history.insert(newItem, at: 0)
             self.lastSyncedTime = Date()
+            self.incrementSyncCount()
         }
     }
 
@@ -230,6 +243,7 @@ class ClipboardManager: ObservableObject {
                 )
                 self.history.insert(newItem, at: 0)
                 self.lastSyncedTime = Date()
+                self.incrementSyncCount()
             }
         )
 
@@ -309,5 +323,50 @@ class ClipboardManager: ObservableObject {
             }
         }
         return data
+    }
+    
+    // MARK: - Sync Statistics
+    
+    func loadSyncStats() {
+        let defaults = UserDefaults.standard
+        syncCountAllTime = defaults.integer(forKey: "\(syncStatsKey)_allTime")
+        
+        // Check if today's date matches stored date
+        let storedDateString = defaults.string(forKey: "\(syncStatsKey)_todayDate") ?? ""
+        let todayString = formatDateString(Date())
+        
+        if storedDateString == todayString {
+            syncCountToday = defaults.integer(forKey: "\(syncStatsKey)_today")
+        } else {
+            // Reset daily count for new day
+            syncCountToday = 0
+            defaults.set(todayString, forKey: "\(syncStatsKey)_todayDate")
+            defaults.set(0, forKey: "\(syncStatsKey)_today")
+        }
+        
+        sessionStartDate = Date()
+        syncCountSession = 0
+    }
+    
+    func incrementSyncCount() {
+        DispatchQueue.main.async {
+            self.syncCountToday += 1
+            self.syncCountSession += 1
+            self.syncCountAllTime += 1
+            self.saveSyncStats()
+        }
+    }
+    
+    private func saveSyncStats() {
+        let defaults = UserDefaults.standard
+        defaults.set(syncCountAllTime, forKey: "\(syncStatsKey)_allTime")
+        defaults.set(syncCountToday, forKey: "\(syncStatsKey)_today")
+        defaults.set(formatDateString(Date()), forKey: "\(syncStatsKey)_todayDate")
+    }
+    
+    private func formatDateString(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: date)
     }
 }
