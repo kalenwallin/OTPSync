@@ -30,14 +30,12 @@ struct LandingScreen: View {
                         // Title Section
                         VStack(spacing: 8) {
                             Text("ClipSync")
-                                .font(.custom("SF Pro Display", size: 64))
-                                .fontWeight(.bold)
+                                .font(.system(size: 64, weight: .bold, design: .default))
                                 .kerning(-3)
                                 .foregroundColor(.white)
                             
                             Text("ReImagined the Apple Way")
-                                .font(.custom("SF Pro Display", size: 28))
-                                .fontWeight(.semibold)
+                                .font(.system(size: 28, weight: .semibold, design: .default))
                                 .kerning(-1)
                                 .multilineTextAlignment(.center)
                                 .foregroundStyle(
@@ -65,8 +63,7 @@ struct LandingScreen: View {
                             navigateToQR = true
                         }) {
                             Text("Get Started")
-                                .font(.custom("SF Pro Display", size: 20))
-                                .fontWeight(.medium)
+                                .font(.system(size: 20, weight: .medium, design: .default))
                                 .foregroundColor(Color(red: 0.38, green: 0.498, blue: 0.612))
                                 .frame(width: 161, height: 49)
                                 .background(
@@ -115,8 +112,7 @@ struct LandingScreen: View {
                                 print("Learn More tapped")
                             }) {
                                 Text("Learn More")
-                                    .font(.custom("SF Pro", size: 14))
-                                    .fontWeight(.medium)
+                                    .font(.system(size: 14, weight: .medium, design: .default))
                                     .foregroundColor(Color(red: 0.216, green: 0.341, blue: 0.620))
                             }
                             .buttonStyle(.plain)
@@ -125,8 +121,7 @@ struct LandingScreen: View {
                                 print("About tapped")
                             }) {
                                 Text("About")
-                                    .font(.custom("SF Pro", size: 14))
-                                    .fontWeight(.medium)
+                                    .font(.system(size: 14, weight: .medium, design: .default))
                                     .foregroundColor(Color(red: 0.216, green: 0.341, blue: 0.620))
                             }
                             .buttonStyle(.plain)

@@ -30,8 +30,7 @@ struct ConnectedScreen: View {
             
             // Title (Top)
             Text("You're Connected")
-                .font(.custom("SF Pro Display", size: 48))
-                .fontWeight(.bold)
+                .font(.system(size: 48, weight: .bold, design: .default))
                 .kerning(-1.2)
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
@@ -40,8 +39,7 @@ struct ConnectedScreen: View {
             
             // Subtitle (Below Title)
             Text("Your Phone is now linked\nwith \(DeviceManager.shared.getFriendlyMacName())")
-                .font(.custom("SF Pro", size: 22))
-                .fontWeight(.medium)
+                .font(.system(size: 22, weight: .medium, design: .default))
                 .lineSpacing(4)
                 .multilineTextAlignment(.center)
                 .foregroundColor(Color(red: 0.125, green: 0.263, blue: 0.600))
@@ -60,8 +58,7 @@ struct ConnectedScreen: View {
                 navigateToFinal = true
             }) {
                 Text("Continue")
-                    .font(.custom("SF Pro", size: 17))
-                    .fontWeight(.semibold)
+                    .font(.system(size: 17, weight: .semibold, design: .default))
                     .foregroundColor(.black)
             }
             .frame(width: 132, height: 42)

@@ -44,8 +44,7 @@ struct QRGenScreen: View {
                 VStack(alignment: .leading, spacing: 40) {
                     // Title
                     Text("One Scan.\nInfinite Sync.")
-                        .font(.custom("SF Pro Display", size: 52))
-                        .fontWeight(.bold)
+                        .font(.system(size: 52, weight: .bold, design: .default))
                         .kerning(-1.56)
                         .foregroundColor(.white)
                         .multilineTextAlignment(.leading)
@@ -70,8 +69,7 @@ struct QRGenScreen: View {
                             NumberCircleView(number: "1")
 
                             Text("Open ClipSync app on your\nAndroid Phone")
-                                .font(.custom("SF Pro", size: 19))
-                                .fontWeight(.medium)
+                                .font(.system(size: 19, weight: .medium, design: .default))
                                 .lineSpacing(2)
                                 .multilineTextAlignment(.center)
                                 .foregroundColor(Color(red: 0.125, green: 0.263, blue: 0.600))
@@ -89,8 +87,7 @@ struct QRGenScreen: View {
                         NumberCircleView(number: "2")
 
                         Text("Tap \"Scan QR\" inside the\napp")
-                            .font(.custom("SF Pro", size: 18))
-                            .fontWeight(.medium)
+                            .font(.system(size: 18, weight: .medium, design: .default))
                             .lineSpacing(3)
                             .multilineTextAlignment(.leading)
                             .foregroundColor(Color(red: 0.125, green: 0.263, blue: 0.600))
@@ -111,8 +108,7 @@ struct QRGenScreen: View {
                         NumberCircleView(number: "3")
 
                         Text("Point your phone's camera at\nthis QR Code")
-                            .font(.custom("SF Pro", size: 18))
-                            .fontWeight(.medium)
+                            .font(.system(size: 18, weight: .medium, design: .default))
                             .lineSpacing(3)
                             .multilineTextAlignment(.leading)
                             .foregroundColor(Color(red: 0.125, green: 0.263, blue: 0.600))
@@ -157,8 +153,7 @@ struct QRGenScreen: View {
                                     .frame(width: 140, height: 30)
 
                                 Text(DeviceManager.shared.getFriendlyMacName())
-                                    .font(.custom("SF Pro", size: 14))
-                                    .fontWeight(.medium)
+                                    .font(.system(size: 14, weight: .medium, design: .default))
                                     .foregroundColor(.white)
                             }
                             .padding(.top, 10)
@@ -288,8 +283,7 @@ private struct NumberCircleView: View {
                 .blendMode(.overlay)
 
             Text(number)
-                .font(.custom("SF Pro", size: 16))
-                .fontWeight(.bold)
+                .font(.system(size: 16, weight: .bold, design: .default))
                 .foregroundColor(Color(red: 0.125, green: 0.263, blue: 0.600))
         }
         .frame(width: 34, height: 34)
