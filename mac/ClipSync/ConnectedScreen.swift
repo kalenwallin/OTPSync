@@ -140,9 +140,7 @@ struct ConnectLottieView: NSViewRepresentable {
     }
 
     func updateNSView(_ nsView: NSView, context: Context) {
-        if let animationView = nsView.subviews.first as? LottieAnimationView {
-            animationView.frame = nsView.bounds
-        }
+        // Frame updates are handled by autoresizingMask set in makeNSView
     }
 }
 
