@@ -110,6 +110,14 @@ class ClipboardManager: ObservableObject {
         guard currentChangeCount != lastChangeCount else { return }
         lastChangeCount = currentChangeCount
 
+        // Dispatch to main queue to avoid race condition with ignoreNextChange flag
+        // which is set from the main queue when receiving clipboard from Android
+        DispatchQueue.main.async { [weak self] in
+            self?.processClipboardChange()
+        }
+    }
+
+    private func processClipboardChange() {
         if ignoreNextChange {
             ignoreNextChange = false
             return
@@ -128,21 +136,19 @@ class ClipboardManager: ObservableObject {
 
         uploadClipboard(text: text)
 
-        DispatchQueue.main.async {
-            if let lastItem = self.history.first, lastItem.content == text {
-                return
-            }
-
-            let newItem = ClipboardItem(
-                content: text,
-                timestamp: Date(),
-                deviceName: "Mac",
-                direction: .sent
-            )
-            self.history.insert(newItem, at: 0)
-            self.lastSyncedTime = Date()
-            self.incrementSyncCount(direction: .sent)
+        if let lastItem = self.history.first, lastItem.content == text {
+            return
         }
+
+        let newItem = ClipboardItem(
+            content: text,
+            timestamp: Date(),
+            deviceName: "Mac",
+            direction: .sent
+        )
+        self.history.insert(newItem, at: 0)
+        self.lastSyncedTime = Date()
+        self.incrementSyncCount(direction: .sent)
     }
 
     // --- Upload Logic ---
@@ -236,7 +242,7 @@ class ClipboardManager: ObservableObject {
                 self.lastCopiedText = content
 
                 let deviceName = PairingManager.shared.pairedDeviceName
-                
+
                 // Send macOS notification
                 NotificationManager.shared.sendClipboardSyncNotification(
                     content: content,
@@ -366,37 +372,40 @@ class ClipboardManager: ObservableObject {
 
     private func calculateSyncStreak(defaults: UserDefaults, todayString: String) -> Int {
         var streakDates = defaults.stringArray(forKey: "\(syncStatsKey)_streakDates") ?? []
-        
+
         // If no dates yet, streak is 0
         guard !streakDates.isEmpty else { return 0 }
-        
+
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
-        
+
         // Sort dates in descending order (most recent first)
         streakDates.sort { $0 > $1 }
-        
+
         var streak = 0
         var expectedDate = Date()
-        
+
         // If today isn't in the list yet, start checking from yesterday
         if streakDates.first != todayString {
-            expectedDate = Calendar.current.date(byAdding: .day, value: -1, to: expectedDate) ?? expectedDate
+            expectedDate =
+                Calendar.current.date(byAdding: .day, value: -1, to: expectedDate) ?? expectedDate
         }
-        
+
         for dateString in streakDates {
             let expectedDateString = formatDateString(expectedDate)
-            
+
             if dateString == expectedDateString {
                 streak += 1
-                expectedDate = Calendar.current.date(byAdding: .day, value: -1, to: expectedDate) ?? expectedDate
+                expectedDate =
+                    Calendar.current.date(byAdding: .day, value: -1, to: expectedDate)
+                    ?? expectedDate
             } else if dateString < expectedDateString {
                 // Gap in dates, streak is broken
                 break
             }
             // If dateString > expectedDateString, skip (future date edge case)
         }
-        
+
         return streak
     }
 
@@ -405,14 +414,14 @@ class ClipboardManager: ObservableObject {
             self.syncCountToday += 1
             self.syncCountSession += 1
             self.syncCountAllTime += 1
-            
+
             switch direction {
             case .sent:
                 self.sentCount += 1
             case .received:
                 self.receivedCount += 1
             }
-            
+
             self.saveSyncStats()
         }
     }
@@ -423,10 +432,10 @@ class ClipboardManager: ObservableObject {
         defaults.set(syncCountToday, forKey: "\(syncStatsKey)_today")
         defaults.set(sentCount, forKey: "\(syncStatsKey)_sent")
         defaults.set(receivedCount, forKey: "\(syncStatsKey)_received")
-        
+
         let todayString = formatDateString(Date())
         defaults.set(todayString, forKey: "\(syncStatsKey)_todayDate")
-        
+
         // Update streak dates
         var streakDates = defaults.stringArray(forKey: "\(syncStatsKey)_streakDates") ?? []
         if !streakDates.contains(todayString) {

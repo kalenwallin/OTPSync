@@ -65,7 +65,7 @@ struct FinalScreen: View {
                 .opacity(cardsOpacity)
 
             // Subtitle
-            Text("To keep OTPSync working smoothly, allow these\npermissions")
+            Text("To keep OTP Sync working smoothly, \nallow these permissions")
                 .font(.system(size: 24, weight: .medium, design: .default))
                 .kerning(-0.66)
                 .foregroundColor(Color(red: 0.125, green: 0.263, blue: 0.600))
