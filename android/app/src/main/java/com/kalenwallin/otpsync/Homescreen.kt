@@ -104,10 +104,6 @@ fun Homescreen(
     var showUpdateDialog by remember { mutableStateOf(false) }
     val currentVersion = "1.0.0" // TODO: Fetch from BuildConfig in production
 
-    // Feature Toggles (Preferences)
-    var syncToMac by remember { mutableStateOf(DeviceManager.isSyncToMacEnabled(context)) }
-    var syncFromMac by remember { mutableStateOf(DeviceManager.isSyncFromMacEnabled(context)) }
-
     // Clipboard History State
     var clipboardHistory by remember { mutableStateOf<List<ConvexClipboardItem>>(emptyList()) }
     var isLoadingHistory by remember { mutableStateOf(false) }
@@ -321,41 +317,6 @@ fun Homescreen(
                                         color = Color.White
                                     )
                                 }
-                            }
-                        }
-                    }
-
-                    // --- Preferences (Sync Toggles) ---
-                    Column {
-                        SectionHeader(text = "Preferences", fontFamily = robotoFontFamily, scale = scale)
-                        
-                        InnerWhiteCard(scale = scale) {
-                            Column(modifier = Modifier.padding((20 * scale).dp)) {
-                                // Sync To Mac
-                                PreferenceRow(
-                                    label = "Sync to Mac",
-                                    checked = syncToMac,
-                                    onCheckedChange = { 
-                                        syncToMac = it
-                                        DeviceManager.setSyncToMacEnabled(context, it)
-                                    },
-                                    fontFamily = robotoFontFamily,
-                                    scale = scale
-                                )
-
-                                HorizontalDivider(modifier = Modifier.padding(vertical = (12 * scale).dp), color = Color(0xFFE5E5EA))
-                                
-                                // Sync From Mac
-                                PreferenceRow(
-                                    label = "Sync from Mac",
-                                    checked = syncFromMac,
-                                    onCheckedChange = { 
-                                        syncFromMac = it
-                                        DeviceManager.setSyncFromMacEnabled(context, it)
-                                    },
-                                    fontFamily = robotoFontFamily,
-                                    scale = scale
-                                )
                             }
                         }
                     }
@@ -633,35 +594,6 @@ fun InnerWhiteCard(scale: Float = 1f, content: @Composable () -> Unit) {
             )
     ) {
         content()
-    }
-}
-
-@Composable
-fun PreferenceRow(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit, fontFamily: FontFamily, scale: Float = 1f) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = label,
-            color = Color.Black,
-            fontSize = (16 * scale).coerceIn(14f, 16f).sp,
-            fontFamily = fontFamily,
-            fontWeight = FontWeight.Medium
-        )
-        Switch(
-            checked = checked, 
-            onCheckedChange = onCheckedChange,
-            modifier = Modifier.scale(scale),
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = Color.White,
-                checkedTrackColor = Color(0xFF34C759), // iOS Green
-                uncheckedThumbColor = Color.White,
-                uncheckedTrackColor = Color(0xFFE9E9EA),
-                uncheckedBorderColor = Color.Transparent
-            )
-        )
     }
 }
 
