@@ -26,19 +26,6 @@ class ClipboardManager: ObservableObject {
     private let syncStatsKey = "syncStats"
     private var sessionStartDate: Date = Date()
 
-    var syncToMac: Bool {
-        // Read directly from UserDefaults each time to ensure fresh value
-        let value = UserDefaults.standard.bool(forKey: "syncToMac")
-        return value
-    }
-    var syncFromMac: Bool {
-        // Read directly from UserDefaults each time to ensure fresh value
-        // Note: UserDefaults.bool(forKey:) returns false if key doesn't exist,
-        // but we register defaults so this should always have a value
-        let value = UserDefaults.standard.bool(forKey: "syncFromMac")
-        return value
-    }
-
     private let pasteboard = NSPasteboard.general
     private var timer: DispatchSourceTimer?  // Changed from Timer to DispatchSourceTimer
     private var watchdogTimer: Timer?  // Fix for infinite timer loop
@@ -67,11 +54,11 @@ class ClipboardManager: ObservableObject {
     // This avoids main thread blocking and "App Nap" suspension issues.
     func startMonitoring() {
         print("🔄 Starting clipboard monitoring...")
-        print("   syncFromMac: \(syncFromMac), syncToMac: \(syncToMac), isSyncPaused: \(isSyncPaused)")
-        
-        if isSyncPaused { 
+        print("   isSyncPaused: \(isSyncPaused)")
+
+        if isSyncPaused {
             print("⏸️ Sync is paused, not starting monitoring")
-            return 
+            return
         }
         stopMonitoring()
 
@@ -149,15 +136,6 @@ class ClipboardManager: ObservableObject {
         print("📋 New clipboard text detected: \(text.prefix(50))...")
         lastCopiedText = text
 
-        // Check sync setting - read fresh from UserDefaults
-        let syncEnabled = syncFromMac
-        print("🔄 syncFromMac setting: \(syncEnabled)")
-        guard syncEnabled else {
-            print("⏭️ syncFromMac is disabled - NOT syncing to Android")
-            return
-        }
-
-        print("✅ syncFromMac is enabled - syncing to Android")
         uploadClipboard(text: text)
 
         if let lastItem = self.history.first, lastItem.content == text {
@@ -244,7 +222,7 @@ class ClipboardManager: ObservableObject {
                 guard let self = self else { return }
                 self.lastListenerUpdate = Date()
 
-                if self.isSyncPaused || !self.syncToMac { return }
+                if self.isSyncPaused { return }
 
                 guard let item = item else { return }
 

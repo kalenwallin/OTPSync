@@ -13,11 +13,7 @@ struct OTPSyncApp: App {
 
     init() {
         // Initialize default user preferences
-
-        UserDefaults.standard.register(defaults: [
-            "syncToMac": true,
-            "syncFromMac": true,
-        ])
+        UserDefaults.standard.register(defaults: [:])
 
         // --- Region Auto-Detection (REMOVED) ---
         // We now rely on Manual Selection in QRGenScreen for the initial setup.

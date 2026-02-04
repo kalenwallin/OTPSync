@@ -7,9 +7,6 @@ struct HomeScreen: View {
     @StateObject private var pairingManager = PairingManager.shared
     @ObservedObject private var updateChecker = UpdateChecker.shared
 
-    @AppStorage("syncToMac") private var syncToMac = true
-    @AppStorage("syncFromMac") private var syncFromMac = true
-
     @State private var showRepairQR = false
 
     @State private var contentOpacity: Double = 0
@@ -41,7 +38,7 @@ struct HomeScreen: View {
 
                     // Top Row - Device Card and Check Encryption Card
                     HStack(alignment: .top, spacing: 18) {
-                        // Left Column: Device Card + (Sync Settings | RePair)
+                        // Left Column: Device Card + RePair
                         VStack(alignment: .leading, spacing: 12) {
                             // --- Device Card ---
                             InnerGlassCard {
@@ -75,74 +72,8 @@ struct HomeScreen: View {
                             .frame(width: 298, height: 70)
                             .offset(x: 7)
 
-                            // --- Sync Settings Row ---
+                            // --- RePair Button ---
                             HStack(alignment: .top, spacing: 28) {
-                                // Sync Toggles
-                                InnerGlassCard {
-                                    VStack(alignment: .leading, spacing: 0) {
-                                        Text("Sync Settings")
-                                            .font(.system(size: 11, weight: .semibold))
-                                            .foregroundColor(.black.opacity(0.6))
-                                            .padding(.top, 14)  // Adjusted Padding
-                                            .padding(.leading, 12)
-                                            .padding(.bottom, 12)
-
-                                        // Sync to Mac Row
-                                        HStack(spacing: 6) {
-                                            Image(systemName: "iphone")
-                                                .font(.system(size: 14))
-                                                .foregroundColor(.black)
-                                                .frame(width: 16)
-
-                                            Image(systemName: "arrow.right")
-                                                .font(.system(size: 10, weight: .bold))
-                                                .foregroundColor(.black.opacity(0.6))
-
-                                            Image(systemName: "laptopcomputer")
-                                                .font(.system(size: 14))
-                                                .foregroundColor(.black)
-                                                .frame(width: 20)
-
-                                            Spacer(minLength: 0)
-
-                                            Toggle("", isOn: $syncToMac)
-                                                .labelsHidden()
-                                                .toggleStyle(.switch)
-                                                .scaleEffect(0.6)
-                                        }
-                                        .padding(.horizontal, 10)
-                                        .padding(.bottom, 8)
-
-                                        // Sync from Mac Row
-                                        HStack(spacing: 6) {
-                                            Image(systemName: "laptopcomputer")
-                                                .font(.system(size: 14))
-                                                .foregroundColor(.black)
-                                                .frame(width: 20)
-
-                                            Image(systemName: "arrow.right")
-                                                .font(.system(size: 10, weight: .bold))
-                                                .foregroundColor(.black.opacity(0.6))
-
-                                            Image(systemName: "iphone")
-                                                .font(.system(size: 14))
-                                                .foregroundColor(.black)
-                                                .frame(width: 16)
-
-                                            Spacer(minLength: 0)
-
-                                            Toggle("", isOn: $syncFromMac)
-                                                .labelsHidden()
-                                                .toggleStyle(.switch)
-                                                .scaleEffect(0.6)
-                                        }
-                                        .padding(.horizontal, 10)
-
-                                        Spacer()
-                                    }
-                                }
-                                .frame(width: 125, height: 130)
-
                                 // RePair Button Card
                                 ZStack {
                                     // Normal RePair button
