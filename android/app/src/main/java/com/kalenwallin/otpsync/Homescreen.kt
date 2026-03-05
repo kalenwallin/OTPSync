@@ -196,7 +196,7 @@ fun Homescreen(
     // --- Side Effects ---
 
     // 1. Service Listener for Real-Time Sync
-    // Polls Convex for clipboard changes
+    // WebSocket subscription to Convex for clipboard changes
     LaunchedEffect(Unit) {
         val pairingId = DeviceManager.getPairingId(context)
         if (pairingId != null) {

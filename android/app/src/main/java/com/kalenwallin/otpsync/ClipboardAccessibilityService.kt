@@ -347,54 +347,68 @@ class ClipboardAccessibilityService : AccessibilityService() {
         
         convexPollingJob = serviceScope.launch {
             var lastSeenItemId: String? = null
-            
-            while (isActive) {
+            val pairingId = DeviceManager.getPairingId(this@ClipboardAccessibilityService)
+            if (pairingId == null) {
+                Log.d(TAG, "No pairing ID, skipping WebSocket subscription")
+                return@launch
+            }
+
+            // WebSocket-based subscription — Convex pushes updates in real-time
+            ConvexManager.subscribeToClipboard(
+                this@ClipboardAccessibilityService,
+                pairingId
+            ).collect { item ->
                 try {
                     // Check if sync from Mac is enabled
                     if (!DeviceManager.isSyncFromMacEnabled(this@ClipboardAccessibilityService)) {
-                        delay(1000)
-                        continue
+                        return@collect
                     }
-                    
-                    val latest = ConvexManager.getLatestClipboard(this@ClipboardAccessibilityService)
-                    
-                    if (latest != null) {
-                        val content = latest.content
-                        val itemId = latest.id
-                        
-                        // Only process if this is a new item we haven't seen before
-                        // and content is different from current clipboard
-                        if (itemId != lastSeenItemId && itemId.isNotEmpty() &&
-                            content != lastSyncedContent && content != lastClipboardContent) {
-                            
-                            Log.d(TAG, "New clipboard item received from Mac: ${content.take(20)}...")
-                            lastSeenItemId = itemId
-                            ignoreNextChange = true
-                            lastSyncedContent = content
-                            lastClipboardContent = content
-                            
-                            // Write directly to clipboard from the accessibility service
-                            // This is more reliable than starting the Ghost Activity
-                            // Android allows writing to clipboard from accessibility services
-                            withContext(Dispatchers.Main) {
-                                writeToClipboard(content)
-                            }
-                            
-                            handler.postDelayed({
-                                ignoreNextChange = false
-                            }, 2000)
-                        } else if (lastSeenItemId == null && itemId.isNotEmpty()) {
-                            // Initialize lastSeenItemId on first run without copying
-                            // This prevents copying stale content on service restart
-                            lastSeenItemId = itemId
-                            Log.d(TAG, "Initialized with existing item: $itemId")
+
+                    if (item == null) return@collect
+
+                    val content: String
+                    val itemId = item.id
+                    val deviceId = DeviceManager.getDeviceId(this@ClipboardAccessibilityService)
+
+                    // Skip items from this device
+                    if (item.sourceDeviceId == deviceId) return@collect
+
+                    // Decrypt content
+                    content = try {
+                        ConvexManager.decryptData(this@ClipboardAccessibilityService, item.content)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to decrypt clipboard content", e)
+                        item.content
+                    }
+
+                    // Only process if this is a new item we haven't seen before
+                    // and content is different from current clipboard
+                    if (itemId != lastSeenItemId && itemId.isNotEmpty() &&
+                        content != lastSyncedContent && content != lastClipboardContent) {
+
+                        Log.d(TAG, "New clipboard from Mac (WebSocket): ${content.take(20)}...")
+                        lastSeenItemId = itemId
+                        ignoreNextChange = true
+                        lastSyncedContent = content
+                        lastClipboardContent = content
+
+                        // Write directly to clipboard from the accessibility service
+                        withContext(Dispatchers.Main) {
+                            writeToClipboard(content)
                         }
+
+                        handler.postDelayed({
+                            ignoreNextChange = false
+                        }, 2000)
+                    } else if (lastSeenItemId == null && itemId.isNotEmpty()) {
+                        // Initialize lastSeenItemId on first run without copying
+                        // This prevents copying stale content on service restart
+                        lastSeenItemId = itemId
+                        Log.d(TAG, "Initialized with existing item: $itemId")
                     }
                 } catch (e: Exception) {
-                    Log.e(TAG, "Error in Convex polling", e)
+                    Log.e(TAG, "Error processing WebSocket clipboard item", e)
                 }
-                
-                delay(3000) // Poll every 3 seconds (reduced from 1s to save Convex function calls)
             }
         }
     }

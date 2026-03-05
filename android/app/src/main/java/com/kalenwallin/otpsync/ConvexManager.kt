@@ -4,10 +4,13 @@ import android.content.Context
 import android.util.Base64
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -19,6 +22,7 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.json.JSONObject
+import org.json.JSONArray
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
@@ -369,42 +373,120 @@ object ConvexManager {
         }
     }
 
-    // --- Polling Subscription ---
-    
+    // --- WebSocket Subscription (real-time via Convex sync protocol) ---
+
     fun subscribeToClipboard(
         context: Context,
-        pairingId: String,
-        intervalMs: Long = 3000  // Reduced from 500ms to save Convex function calls
-    ): Flow<ConvexClipboardItem?> = flow {
-        var lastItemId: String? = null
-        
-        while (true) {
-            try {
-                val item = query(
-                    context,
-                    "clipboard:getLatest",
-                    mapOf("pairingId" to pairingId)
-                ) { jsonObj ->
-                    ConvexClipboardItem(
-                        id = jsonObj["_id"]?.jsonPrimitive?.content ?: "",
-                        creationTime = jsonObj["_creationTime"]?.jsonPrimitive?.content?.toDoubleOrNull()?.toLong() ?: 0L,
-                        content = jsonObj["content"]?.jsonPrimitive?.content ?: "",
-                        pairingId = jsonObj["pairingId"]?.jsonPrimitive?.content ?: "",
-                        sourceDeviceId = jsonObj["sourceDeviceId"]?.jsonPrimitive?.content ?: "",
-                        type = jsonObj["type"]?.jsonPrimitive?.content ?: "text"
-                    )
+        pairingId: String
+    ): Flow<ConvexClipboardItem?> = callbackFlow {
+        val wsUrl = getDeploymentUrl(context)
+            .replace("https://", "wss://")
+            .replace("http://", "ws://") + "/api/1.0/sync"
+
+        val client = okhttp3.OkHttpClient.Builder()
+            .readTimeout(0, java.util.concurrent.TimeUnit.MILLISECONDS)
+            .pingInterval(30, java.util.concurrent.TimeUnit.SECONDS)
+            .build()
+
+        val request = okhttp3.Request.Builder().url(wsUrl).build()
+        val sessionId = java.util.UUID.randomUUID().toString()
+        var currentWs: okhttp3.WebSocket? = null
+        var reconnectDelay = 1000L
+
+        fun connect() {
+            val ws = client.newWebSocket(request, object : okhttp3.WebSocketListener() {
+                override fun onOpen(webSocket: okhttp3.WebSocket, response: okhttp3.Response) {
+                    Log.d(TAG, "WebSocket connected for clipboard subscription")
+                    reconnectDelay = 1000L
+
+                    // Send Connect message
+                    val connectMsg = JSONObject().apply {
+                        put("type", "Connect")
+                        put("sessionId", sessionId)
+                        put("connectionCount", 0)
+                        put("lastCloseReason", "clean")
+                    }
+                    webSocket.send(connectMsg.toString())
+
+                    // Subscribe to clipboard:getLatest
+                    val argsObj = JSONObject().put("pairingId", pairingId)
+                    val addMod = JSONObject().apply {
+                        put("type", "Add")
+                        put("queryId", 0)
+                        put("udfPath", "clipboard.js:getLatest")
+                        put("args", JSONArray().put(argsObj))
+                        put("journal", JSONObject.NULL)
+                    }
+                    val modifyMsg = JSONObject().apply {
+                        put("type", "ModifyQuerySet")
+                        put("baseVersion", 0)
+                        put("newVersion", 1)
+                        put("modifications", JSONArray().put(addMod))
+                    }
+                    webSocket.send(modifyMsg.toString())
                 }
-                
-                // Only emit if item changed
-                if (item != null && item.id != lastItemId) {
-                    lastItemId = item.id
-                    emit(item)
+
+                override fun onMessage(webSocket: okhttp3.WebSocket, text: String) {
+                    try {
+                        val msg = JSONObject(text)
+                        when (msg.optString("type")) {
+                            "Transition" -> {
+                                val modifications = msg.optJSONObject("modifications") ?: return
+                                val mod0 = modifications.optJSONObject("0") ?: return
+                                val modType = mod0.optString("type")
+                                if (modType == "QueryUpdated") {
+                                    if (mod0.isNull("value")) {
+                                        trySend(null)
+                                    } else {
+                                        val value = mod0.getJSONObject("value")
+                                        val item = ConvexClipboardItem(
+                                            id = value.optString("_id", ""),
+                                            creationTime = value.optDouble("_creationTime", 0.0).toLong(),
+                                            content = value.optString("content", ""),
+                                            pairingId = value.optString("pairingId", ""),
+                                            sourceDeviceId = value.optString("sourceDeviceId", ""),
+                                            type = value.optString("type", "text")
+                                        )
+                                        trySend(item)
+                                    }
+                                } else if (modType == "QueryFailed") {
+                                    Log.e(TAG, "WebSocket query failed: ${mod0.optString("errorMessage")}")
+                                }
+                            }
+                            "Ping" -> {
+                                webSocket.send(JSONObject().apply { put("type", "Pong") }.toString())
+                            }
+                            "FatalError" -> {
+                                Log.e(TAG, "WebSocket fatal error: ${msg.optString("message")}")
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error processing WebSocket message", e)
+                    }
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "Clipboard subscription error", e)
-            }
-            
-            delay(intervalMs)
+
+                override fun onFailure(webSocket: okhttp3.WebSocket, t: Throwable, response: okhttp3.Response?) {
+                    Log.e(TAG, "WebSocket failure, reconnecting in ${reconnectDelay}ms", t)
+                    // Schedule reconnect with backoff
+                    launch {
+                        delay(reconnectDelay)
+                        reconnectDelay = minOf(reconnectDelay * 2, 30000L)
+                        connect()
+                    }
+                }
+
+                override fun onClosed(webSocket: okhttp3.WebSocket, code: Int, reason: String) {
+                    Log.d(TAG, "WebSocket closed: $reason")
+                }
+            })
+            currentWs = ws
+        }
+
+        connect()
+
+        awaitClose {
+            currentWs?.close(1000, "Subscription cancelled")
+            client.dispatcher.executorService.shutdown()
         }
     }.flowOn(Dispatchers.IO)
 

@@ -98,6 +98,9 @@ dependencies {
     // Kotlin Serialization (for Convex JSON parsing)
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
+    // OkHttp (WebSocket support for Convex real-time subscriptions)
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 

@@ -28,7 +28,6 @@ class ClipboardManager: ObservableObject {
 
     private let pasteboard = NSPasteboard.general
     private var timer: DispatchSourceTimer?  // Changed from Timer to DispatchSourceTimer
-    private var watchdogTimer: Timer?  // Fix for infinite timer loop
     private var lastChangeCount = 0
     private var lastCopiedText: String = ""
     private var contentToIgnore: String? = nil  // Content we just received from Android - ignore if it matches
@@ -41,9 +40,6 @@ class ClipboardManager: ObservableObject {
         return UserDefaults.standard.string(forKey: "encryption_key")
             ?? Secrets.fallbackEncryptionKey
     }
-
-    private var isListenerActive = false
-    private var lastListenerUpdate = Date()
 
     init() {
         loadSyncStats()
@@ -182,7 +178,8 @@ class ClipboardManager: ObservableObject {
     }
 
     // --- Download Logic ---
-    // Polling-based listener for incoming clipboard changes from Android
+    // WebSocket-based listener for incoming clipboard changes from Android.
+    // Convex pushes updates in real-time when data changes — no polling needed.
     func listenForAndroidClipboard(retryCount: Int = 0) {
         guard let pairingId = PairingManager.shared.pairingId else {
             // Retry logic for startup race conditions
@@ -197,15 +194,10 @@ class ClipboardManager: ObservableObject {
         stopListening()
         let macDeviceId = DeviceManager.shared.getDeviceId()
 
-        isListenerActive = true
-        lastListenerUpdate = Date()
-
-        // Use Convex polling subscription
-        // Interval increased to 3s to reduce Convex function calls (free tier: 1M/month)
+        // WebSocket subscription — Convex pushes updates when clipboard data changes
         clipboardSubscription = ConvexManager.shared.subscribe(
             to: "clipboard:getLatest",
             args: ["pairingId": pairingId],
-            interval: 3.0,
             type: ConvexClipboardItem.self
         )
         .receive(on: DispatchQueue.main)
@@ -221,7 +213,6 @@ class ClipboardManager: ObservableObject {
             },
             receiveValue: { [weak self] item in
                 guard let self = self else { return }
-                self.lastListenerUpdate = Date()
 
                 if self.isSyncPaused { return }
 
@@ -275,40 +266,11 @@ class ClipboardManager: ObservableObject {
                 self.incrementSyncCount(direction: .received)
             }
         )
-
-        startListenerWatchdog()
-    }
-
-    // --- Watchdog ---
-    // Restarts listener if no heartbeat for 60s (Fixes stale connection issues)
-    private func startListenerWatchdog() {
-        watchdogTimer?.invalidate()
-
-        watchdogTimer = Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) {
-            [weak self] timer in
-            guard let self = self else {
-                timer.invalidate()
-                return
-            }
-
-            if !self.isListenerActive {
-                timer.invalidate()
-                return
-            }
-
-            if Date().timeIntervalSince(self.lastListenerUpdate) > 60 {
-                print("⚠️ Watchdog: Listener stale. Restarting...")
-                self.listenForAndroidClipboard()
-            }
-        }
     }
 
     func stopListening() {
-        watchdogTimer?.invalidate()
-        watchdogTimer = nil
         clipboardSubscription?.cancel()
         clipboardSubscription = nil
-        isListenerActive = false
     }
 
     // --- Crypto Helpers (AES-GCM) ---

@@ -23,7 +23,7 @@ class PairingManager: ObservableObject {
     private var listenStartTime: Date?
 
     // --- Pairing Handshake ---
-    // Polls for a new pairing in Convex with matching macId
+    // Subscribes to Convex for a new pairing with matching macId
     func listenForPairing(macDeviceId: String) {
         guard !isPaired else { return }
 
@@ -46,7 +46,6 @@ class PairingManager: ObservableObject {
                 "macDeviceId": macDeviceId,
                 "sinceTimestamp": sinceTimestamp,
             ],
-            interval: 1.0,
             type: ConvexPairing.self
         )
         .receive(on: DispatchQueue.main)
@@ -98,7 +97,6 @@ class PairingManager: ObservableObject {
         unpairingSubscription = ConvexManager.shared.subscribe(
             to: "pairings:exists",
             args: ["pairingId": pairingId],
-            interval: 30.0,  // Reduced from 2s to save Convex function calls
             type: Bool.self
         )
         .receive(on: DispatchQueue.main)
