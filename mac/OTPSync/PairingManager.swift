@@ -21,6 +21,7 @@ class PairingManager: ObservableObject {
     private var pairingSubscription: AnyCancellable?
     private var unpairingSubscription: AnyCancellable?
     private var listenStartTime: Date?
+    private var pairingPollTask: Task<Void, Never>?
 
     // --- Pairing Handshake ---
     // Subscribes to Convex for a new pairing with matching macId
@@ -35,6 +36,36 @@ class PairingManager: ObservableObject {
         print("🎧 PairingManager: Start Check (MacID: \(macDeviceId))")
 
         startConvexPairingListener(macDeviceId: macDeviceId)
+        startHTTPPairingPoller(macDeviceId: macDeviceId)
+    }
+
+    // HTTP polling fallback — queries Convex directly every 2s so pairing works
+    // even if the WebSocket subscription has protocol issues.
+    private func startHTTPPairingPoller(macDeviceId: String) {
+        pairingPollTask?.cancel()
+        let sinceTimestamp = (listenStartTime?.timeIntervalSince1970 ?? 0) * 1000
+
+        pairingPollTask = Task {
+            while !Task.isCancelled {
+                do {
+                    let pairing: ConvexPairing? = try await ConvexManager.shared.query(
+                        "pairings:watchForPairing",
+                        args: [
+                            "macDeviceId": macDeviceId,
+                            "sinceTimestamp": sinceTimestamp,
+                        ]
+                    )
+                    if let pairing = pairing, !self.isPaired {
+                        print("✅ HTTP Poll found pairing! (ID: \(pairing.documentId))")
+                        await MainActor.run { self.processPairingData(pairing) }
+                        return
+                    }
+                } catch {
+                    print("⚠️ PairingManager HTTP poll error: \(error.localizedDescription)")
+                }
+                try? await Task.sleep(nanoseconds: 2_000_000_000)
+            }
+        }
     }
 
     private func startConvexPairingListener(macDeviceId: String) {
@@ -60,7 +91,7 @@ class PairingManager: ObservableObject {
                 guard let self = self, let pairing = optionalPairing else { return }
 
                 // Found a valid pairing!
-                print("✅ Valid Pairing Found! (ID: \(pairing.documentId))")
+                print("✅ WS Pairing Found! (ID: \(pairing.documentId))")
 
                 self.processPairingData(pairing)
             }
@@ -86,6 +117,8 @@ class PairingManager: ObservableObject {
         // Cleanup Listener
         self.pairingSubscription?.cancel()
         self.pairingSubscription = nil
+        self.pairingPollTask?.cancel()
+        self.pairingPollTask = nil
     }
 
     // --- Persistence & Restoration ---
@@ -118,6 +151,8 @@ class PairingManager: ObservableObject {
     func stopListening() {
         pairingSubscription?.cancel()
         pairingSubscription = nil
+        pairingPollTask?.cancel()
+        pairingPollTask = nil
         listenStartTime = nil
     }
 

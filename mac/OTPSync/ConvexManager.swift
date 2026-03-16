@@ -383,7 +383,7 @@ class ConvexManager: ObservableObject {
         let wsUrlStr = deploymentUrl
             .replacingOccurrences(of: "https://", with: "wss://")
             .replacingOccurrences(of: "http://", with: "ws://")
-            + "/api/1.0/sync"
+            + "/api/sync"
 
         guard let url = URL(string: wsUrlStr) else {
             print("❌ ConvexWS: Invalid URL: \(wsUrlStr)")
